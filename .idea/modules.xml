@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/HLSDownloader.iml" filepath="$PROJECT_DIR$/.idea/modules/HLSDownloader.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/HLSDownloader_main.iml" filepath="$PROJECT_DIR$/.idea/modules/HLSDownloader_main.iml" group="HLSDownloader" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/HLSDownloader_test.iml" filepath="$PROJECT_DIR$/.idea/modules/HLSDownloader_test.iml" group="HLSDownloader" />
+    </modules>
+  </component>
+</project>
