@@ -1,5 +1,6 @@
 package com.alebit.hlsdownloader.download;
 
+import com.alebit.hlsdownloader.decrypt.HLSDecrypter;
 import com.alebit.hlsdownloader.playlist.PlaylistManager;
 import com.iheartradio.m3u8.Encoding;
 import com.iheartradio.m3u8.Format;
@@ -73,8 +74,13 @@ public class HLSDownloader {
             BufferedWriter jsonWriter = new BufferedWriter(new FileWriter(jsonPath.toFile(), true));
             jsonWriter.close();
             downloadHLS(progress);
+            videoWriter.close();
+            videoWriter = new BufferedWriter(new FileWriter(path.toFile()));
+            videoWriter.close();
+            System.out.println("Converting video...");
+            new HLSDecrypter(path);
         } catch (IOException e) {
-            System.out.println("Write permission not allowed: " + e.getMessage());
+            System.err.println("Write permission not allowed: " + e.getMessage());
             System.exit(-1);
         }
     }
@@ -102,7 +108,7 @@ public class HLSDownloader {
             playlistWriter.write(playlist);
             playlistStream.close();
         } catch (IOException e) {
-            System.out.println("Write permission not allowed: " + e.getMessage());
+            System.err.println("Write permission not allowed: " + e.getMessage());
             System.exit(-1);
         } catch (Exception e) {
             e.printStackTrace();
@@ -134,15 +140,39 @@ public class HLSDownloader {
 
     private void downloadHLS(int index) {
         DownloadManager downloadManager = new DownloadManager();
+        if (tracks.get(0).hasEncryptionData()) {
+            boolean status = false;
+            boolean downs;
+            if (statusJSON != null && statusJSON.containsKey("Key")) {
+                try {
+                    status = (boolean) statusJSON.get("Key");
+                } catch (Exception e) {
+                }
+            }
+            if (!status) {
+                System.out.println("Downloading encrypt key...");
+                if (tracks.get(0).getEncryptionData().getUri().contains("://")) {
+                    downs = downloadManager.download(tracks.get(0).getEncryptionData().getUri(), partPath.toString() + File.separator);
+                } else {
+                    downs = downloadManager.download(playlistManager.getPreURL() + tracks.get(0).getEncryptionData().getUri(), partPath.toString() + File.separator);
+                }
+                if (!downs) {
+                    System.err.println("Download Failed. Please try again later.");
+                    System.exit(-1);
+                }
+                setKeyProgress(true);
+            }
+        }
         for (int i = index + 1; i < tracks.size(); i++) {
-            System.out.println("Downloading video: " + Math.round(i / tracks.size()) + "% (" + (i+1) + "/" + tracks.size() + ")");
+            System.out.println("Downloading video: " + Math.round(((float)i / (float)tracks.size())*100) + "% (" + (i+1) + "/" + tracks.size() + ")");
             boolean downStatus = downloadManager.download(playlistManager.getPreURL() + tracks.get(i).getUri(), partPath.toString() + File.separator);
             if (!downStatus) {
-                System.out.println("Download Failed. Please try again later.");
+                System.err.println("Download Failed. Please try again later.");
                 System.exit(-1);
             }
             setProgress(i);
         }
+        System.out.println("Sccessful download video.");
     }
 
     private void setProgress(int index) {
@@ -154,6 +184,25 @@ public class HLSDownloader {
                 statusJSON.replace("Progress", index);
             } else {
                 statusJSON.put("Progress", index);
+            }
+            BufferedWriter jsonWriter = new BufferedWriter(new FileWriter(jsonPath.toFile()));
+            jsonWriter.write(statusJSON.toJSONString());
+            jsonWriter.flush();
+            jsonWriter.close();
+        } catch (IOException e) {
+            System.out.println("Cannot open status.json");
+        }
+    }
+
+    private void setKeyProgress(boolean status) {
+        try {
+            if (statusJSON == null) {
+                statusJSON = new JSONObject();
+            }
+            if (statusJSON.containsKey("Key")) {
+                statusJSON.replace("Key", status);
+            } else {
+                statusJSON.put("Key", status);
             }
             BufferedWriter jsonWriter = new BufferedWriter(new FileWriter(jsonPath.toFile()));
             jsonWriter.write(statusJSON.toJSONString());

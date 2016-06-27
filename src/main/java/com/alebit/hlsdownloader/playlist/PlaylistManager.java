@@ -6,6 +6,9 @@ import com.iheartradio.m3u8.PlaylistParser;
 import com.iheartradio.m3u8.data.*;
 
 import java.awt.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
@@ -21,6 +24,7 @@ public class PlaylistManager {
     private MasterPlaylist masterPlaylist;
     private MediaPlaylist mediaPlaylist;
     private List<PlaylistData> masterPlaylistData;
+    private byte[] iv;
     private int version;
 
     public PlaylistManager(String url) {
@@ -38,6 +42,42 @@ public class PlaylistManager {
             mediaPlaylist = playlist.getMediaPlaylist();
 
             setPreURL(playlistURL);
+
+            setIV();
+        } catch (IOException e) {
+            System.err.println("Invalid URL: " + e.getMessage());
+            System.exit(-1);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public PlaylistManager(File file) {
+        playlistURL = file.getPath();
+        try {
+            InputStream inputStream = new FileInputStream(file);
+            PlaylistParser parser = new PlaylistParser(inputStream, Format.EXT_M3U, Encoding.UTF_8);
+            playlist = parser.parse();
+
+            version = playlist.getCompatibilityVersion();
+            masterPlaylist = playlist.getMasterPlaylist();
+            if (masterPlaylist != null) {
+                masterPlaylistData = masterPlaylist.getPlaylists();
+            }
+            mediaPlaylist = playlist.getMediaPlaylist();
+
+            int dotSite = playlistURL.lastIndexOf(File.separator);
+            if (dotSite > 0) {
+                preURL = playlistURL.substring(0, ++dotSite);
+            } else {
+                System.err.println("File path format error");
+                System.exit(-1);
+            }
+
+            setIV();
+        } catch (IOException e) {
+            System.err.println("Invalid URL: " + e.getMessage());
+            System.exit(-1);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -93,8 +133,8 @@ public class PlaylistManager {
         return version;
     }
 
-    public void printPlaylist() {
-        System.out.println(playlist);
+    public byte[] getIV() {
+        return iv;
     }
 
     private void setPreURL(String playlistURL) {
@@ -102,8 +142,21 @@ public class PlaylistManager {
         if (dotSite > 0) {
             preURL = playlistURL.substring(0, ++dotSite);
         } else {
-            System.out.println("URL format error");
+            System.err.println("URL format error");
             System.exit(-1);
+        }
+    }
+
+    private void setIV() {
+        if (hasMediaPlaylist()) {
+            if (mediaPlaylist.getTracks().get(0).hasEncryptionData()) {
+                if (mediaPlaylist.getTracks().get(0).getEncryptionData().hasInitializationVector()) {
+                    iv = new byte[mediaPlaylist.getTracks().get(0).getEncryptionData().getInitializationVector().size()];
+                    for (int i = 0; i < iv.length; i++) {
+                        iv[i] = mediaPlaylist.getTracks().get(0).getEncryptionData().getInitializationVector().get(i);
+                    }
+                }
+            }
         }
     }
 }
