@@ -26,8 +26,10 @@ public class HLSDecrypter {
             } else {
                 decryptManager.setSecret(new File(playlistManager.getPreURL() + tracks.get(0).getEncryptionData().getUri()));
             }
-            for (TrackData trackData : tracks) {
+            for (int i = 0; i < tracks.size(); i++) {
+                TrackData trackData = tracks.get(i);
                 decryptManager.decrypt(new File(playlistManager.getPreURL() + trackData.getUri()), path.toFile(), true);
+                decryptManager.decrypt(new File(playlistManager.getPreURL() + trackData.getUri()), new File(playlistManager.getPreURL() + trackData.getUri() + ".decrypted"), true);
             }
         } else {
 

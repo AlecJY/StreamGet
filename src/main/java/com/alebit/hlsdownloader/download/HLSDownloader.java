@@ -19,6 +19,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 /**
  * Created by Alec on 2016/6/26.
@@ -60,10 +61,21 @@ public class HLSDownloader {
                     long CRC = FileUtils.checksumCRC32(playlistPath.toFile());
                     if (statusJSON.containsKey("CRC32")) {
                         long oldCRC = (long) statusJSON.get("CRC32");
-                        statusJSON.replace("CRC32", CRC);
                         if (CRC == oldCRC) {
                             progress = (int) (long) statusJSON.get("Progress");
+                        } else {
+                            System.out.println("File exists. Continue?(Y/N)");
+                            Scanner scanner = new Scanner(System.in);
+                            String chosen = scanner.next();
+                            if (chosen.toLowerCase() == "y" || chosen.toLowerCase() == "yes") {
+                                if (statusJSON.containsKey("Key")) {
+                                    statusJSON.replace("Key", false);
+                                }
+                            } else {
+                                System.exit(0);
+                            }
                         }
+                        statusJSON.replace("CRC32", CRC);
                     } else {
                         statusJSON.put("CRC32", CRC);
                     }

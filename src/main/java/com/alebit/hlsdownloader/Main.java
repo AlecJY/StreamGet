@@ -2,6 +2,7 @@ package com.alebit.hlsdownloader;
 
 import com.alebit.hlsdownloader.playlist.PlaylistManager;
 import com.alebit.hlsdownloader.download.HLSDownloader;
+import com.alebit.hlsdownloader.plugin.PluginManager;
 import com.iheartradio.m3u8.data.Resolution;
 
 import java.nio.file.Path;
@@ -17,6 +18,9 @@ public class Main {
     private Scanner scanner = new Scanner(System.in);
 
     public Main(String[] args) {
+        PluginManager pluginManager = new PluginManager(args);
+        args = pluginManager.getArgs();
+
         String url = args[0];
         PlaylistManager playlistManager = new PlaylistManager(url);
         while (true) {
