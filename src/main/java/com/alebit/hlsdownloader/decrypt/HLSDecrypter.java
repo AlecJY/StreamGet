@@ -2,8 +2,11 @@ package com.alebit.hlsdownloader.decrypt;
 
 import com.alebit.hlsdownloader.playlist.PlaylistManager;
 import com.iheartradio.m3u8.data.TrackData;
+import org.apache.commons.io.FileUtils;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
@@ -29,11 +32,33 @@ public class HLSDecrypter {
             for (int i = 0; i < tracks.size(); i++) {
                 TrackData trackData = tracks.get(i);
                 decryptManager.decrypt(new File(playlistManager.getPreURL() + trackData.getUri()), path.toFile(), true);
-                decryptManager.decrypt(new File(playlistManager.getPreURL() + trackData.getUri()), new File(playlistManager.getPreURL() + trackData.getUri() + ".decrypted"), true);
+                // decryptManager.decrypt(new File(playlistManager.getPreURL() + trackData.getUri()), new File(playlistManager.getPreURL() + trackData.getUri() + ".decrypted"), false);
             }
         } else {
-
+            for (int i = 0; i < tracks.size(); i++) {
+                TrackData trackData = tracks.get(i);
+                try {
+                    FileInputStream fileInputStream = new FileInputStream(trackData.getUri());
+                    byte[] data = new byte[(int) new File(trackData.getUri()).length()];
+                    fileInputStream.read(data);
+                    FileOutputStream fileOutputStream = new FileOutputStream(path.toFile(), true);
+                    fileOutputStream.write(data);
+                    fileInputStream.close();
+                    fileOutputStream.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
         }
+
+        System.out.println("Deleteing temp file...");
+        try {
+            FileUtils.deleteDirectory(playlistPath.getParent().toFile());
+        } catch (Exception e) {
+            System.err.println("Delete " + playlistPath.getParent() + "failed");
+            System.exit(-1);
+        }
+        System.out.println("Successfully download video!");
     }
 
     private String setFilename(Path path) {
