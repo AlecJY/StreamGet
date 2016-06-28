@@ -81,6 +81,13 @@ public class HLSDownloader {
                     }
                 } catch (Exception e) {
                 }
+            } else if (jsonPath.toFile().exists()) {
+                System.out.println("File exists. Continue?(Y/N)");
+                Scanner scanner = new Scanner(System.in);
+                String chosen = scanner.next();
+                if (!(chosen.toLowerCase() == "y" || chosen.toLowerCase() == "yes")) {
+                    System.exit(0);
+                }
             }
             BufferedWriter videoWriter = new BufferedWriter(new FileWriter(path.toFile(), true));
             BufferedWriter jsonWriter = new BufferedWriter(new FileWriter(jsonPath.toFile(), true));
