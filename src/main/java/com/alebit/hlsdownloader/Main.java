@@ -20,7 +20,16 @@ public class Main {
     public Main(String[] args) {
         PluginManager pluginManager = new PluginManager(args);
         args = pluginManager.getArgs();
-
+        if (args.length == 2) {
+            String[] formatArgs = new String[3];
+            formatArgs[0] = args[0];
+            formatArgs[1] = args[1];
+            formatArgs[2] = "false";
+            args = formatArgs;
+        } else if (args.length != 3) {
+            System.err.println("Wrong arguments");
+            System.exit(-1);
+        }
         String url = args[0];
         PlaylistManager playlistManager = new PlaylistManager(url);
         while (true) {
@@ -36,7 +45,8 @@ public class Main {
             }
         }
         Path path = Paths.get(args[1]);
-        HLSDownloader downloader = new HLSDownloader(playlistManager, path);
+        boolean raw = Boolean.parseBoolean(args[2]);
+        HLSDownloader downloader = new HLSDownloader(playlistManager, path, raw);
     }
 
     private int chooseResolution(List<Resolution> resolutionList) {

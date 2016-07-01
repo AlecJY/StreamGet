@@ -16,8 +16,10 @@ import java.util.List;
  */
 public class HLSDecrypter {
     List<TrackData> tracks;
+    boolean raw;
 
-    public HLSDecrypter(Path path) {
+    public HLSDecrypter(Path path, boolean raw) {
+        this.raw = raw;
         String filename = setFilename(path);
         Path playlistPath = Paths.get(path.getParent().toString() + File.separator + filename + "_part" + File.separator + filename + ".m3u8");
         PlaylistManager playlistManager = new PlaylistManager(playlistPath.toFile());
@@ -53,7 +55,9 @@ public class HLSDecrypter {
 
         System.out.println("Deleteing temp file...");
         try {
-            FileUtils.deleteDirectory(playlistPath.getParent().toFile());
+            if (!raw) {
+                FileUtils.deleteDirectory(playlistPath.getParent().toFile());
+            }
         } catch (Exception e) {
             System.err.println("Delete " + playlistPath.getParent() + "failed");
             System.exit(-1);

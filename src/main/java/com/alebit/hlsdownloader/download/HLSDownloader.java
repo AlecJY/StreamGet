@@ -33,8 +33,10 @@ public class HLSDownloader {
     private String filename;
     private JSONObject statusJSON;
     private int progress = -1;
+    private boolean raw;
 
-    public HLSDownloader(PlaylistManager playlistManager, Path path) {
+    public HLSDownloader(PlaylistManager playlistManager, Path path, boolean raw) {
+        this.raw = raw;
         this.playlistManager = playlistManager;
         tracks = playlistManager.getTracks();
         this.path = path;
@@ -97,7 +99,7 @@ public class HLSDownloader {
             videoWriter = new BufferedWriter(new FileWriter(path.toFile()));
             videoWriter.close();
             System.out.println("Converting video...");
-            new HLSDecrypter(path);
+            new HLSDecrypter(path, raw);
         } catch (IOException e) {
             System.err.println("Write permission not allowed: " + e.getMessage());
             System.exit(-1);
@@ -191,7 +193,6 @@ public class HLSDownloader {
             }
             setProgress(i);
         }
-        System.out.println("Sccessful download video.");
     }
 
     private void setProgress(int index) {
