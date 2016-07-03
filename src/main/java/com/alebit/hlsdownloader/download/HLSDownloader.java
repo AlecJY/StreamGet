@@ -68,7 +68,7 @@ public class HLSDownloader {
                         } else {
                             System.out.println("File exists. Continue?(Y/N)");
                             Scanner scanner = new Scanner(System.in);
-                            String chosen = scanner.next();
+                            String chosen = scanner.nextLine();
                             if (chosen.toLowerCase() == "y" || chosen.toLowerCase() == "yes") {
                                 if (statusJSON.containsKey("Key")) {
                                     statusJSON.replace("Key", false);
@@ -79,17 +79,31 @@ public class HLSDownloader {
                         }
                         statusJSON.replace("CRC32", CRC);
                     } else {
+                        System.out.println("File exists. Continue?(Y/N)");
+                        Scanner scanner = new Scanner(System.in);
+                        String chosen = scanner.nextLine();
+                        if (chosen.toLowerCase() == "y" || chosen.toLowerCase() == "yes") {
+                            if (statusJSON.containsKey("Key")) {
+                                statusJSON.replace("Key", false);
+                            }
+                        } else {
+                            System.exit(0);
+                        }
                         statusJSON.put("CRC32", CRC);
                     }
                 } catch (Exception e) {
                 }
-            } else if (jsonPath.toFile().exists()) {
+            } else if (path.toFile().exists()) {
                 System.out.println("File exists. Continue?(Y/N)");
                 Scanner scanner = new Scanner(System.in);
                 String chosen = scanner.next();
                 if (!(chosen.toLowerCase() == "y" || chosen.toLowerCase() == "yes")) {
                     System.exit(0);
                 }
+            } else {
+                statusJSON = new JSONObject();
+                long CRC = FileUtils.checksumCRC32(playlistPath.toFile());
+                statusJSON.put("CRC32", CRC);
             }
             BufferedWriter videoWriter = new BufferedWriter(new FileWriter(path.toFile(), true));
             BufferedWriter jsonWriter = new BufferedWriter(new FileWriter(jsonPath.toFile(), true));

@@ -53,9 +53,9 @@ public class HLSDecrypter {
             }
         }
 
-        System.out.println("Deleteing temp file...");
         try {
             if (!raw) {
+                System.out.println("Deleteing temp file...");
                 FileUtils.deleteDirectory(playlistPath.getParent().toFile());
             }
         } catch (Exception e) {

@@ -23,7 +23,9 @@ public class PluginManager {
             for (File file: files) {
                 try {
                     PluginLoader pluginLoader = new PluginLoader(file.toURI().toURL());
-                    args = pluginLoader.invokeClass(pluginLoader.getPluginClassName(), args);
+                    if (pluginLoader.getPluginLoaderVersion().equals("1.1")) {
+                        args = pluginLoader.invokeClass(pluginLoader.getPluginClassName(), args);
+                    }
                     break;
                 } catch (MalformedURLException e) {
                     e.printStackTrace();

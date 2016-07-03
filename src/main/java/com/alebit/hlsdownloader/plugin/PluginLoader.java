@@ -59,6 +59,27 @@ public class PluginLoader extends URLClassLoader {
         return attr != null ? attr.getValue("Plugin-Class") : null;
     }
 
+    public String getPluginVersion() throws IOException {
+        URL u = new URL("jar", "", url + "!/");
+        JarURLConnection uc = (JarURLConnection)u.openConnection();
+        Attributes attr = uc.getMainAttributes();
+        return attr != null ? attr.getValue("Plugin-Version") : null;
+    }
+
+    public String getPluginName() throws IOException {
+        URL u = new URL("jar", "", url + "!/");
+        JarURLConnection uc = (JarURLConnection)u.openConnection();
+        Attributes attr = uc.getMainAttributes();
+        return attr != null ? attr.getValue("Plugin-Name") : null;
+    }
+
+    public String getPluginLoaderVersion() throws IOException {
+        URL u = new URL("jar", "", url + "!/");
+        JarURLConnection uc = (JarURLConnection)u.openConnection();
+        Attributes attr = uc.getMainAttributes();
+        return attr != null ? attr.getValue("Plugin-Loader-Version") : null;
+    }
+
     public String[] invokeClass(String name, String[] args)
             throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException
     {
