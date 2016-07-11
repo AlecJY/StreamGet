@@ -4,6 +4,7 @@ import com.iheartradio.m3u8.Encoding;
 import com.iheartradio.m3u8.Format;
 import com.iheartradio.m3u8.PlaylistParser;
 import com.iheartradio.m3u8.data.*;
+import org.json.simple.parser.ParseException;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -46,6 +47,9 @@ public class PlaylistManager {
             setIV();
         } catch (IOException e) {
             System.err.println("Invalid URL: " + e.getMessage());
+            System.exit(-1);
+        } catch (com.iheartradio.m3u8.ParseException e) {
+            System.err.println("Invalid m3u8 playlist");
             System.exit(-1);
         } catch (Exception e) {
             e.printStackTrace();
