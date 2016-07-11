@@ -69,7 +69,7 @@ public class HLSDownloader {
                             System.out.println("File exists. Continue?(Y/N)");
                             Scanner scanner = new Scanner(System.in);
                             String chosen = scanner.nextLine();
-                            if (chosen.toLowerCase() == "y" || chosen.toLowerCase() == "yes") {
+                            if (chosen.toLowerCase().equals("y") || chosen.toLowerCase().equals("yes")) {
                                 if (statusJSON.containsKey("Key")) {
                                     statusJSON.replace("Key", false);
                                 }
@@ -77,12 +77,11 @@ public class HLSDownloader {
                                 System.exit(0);
                             }
                         }
-                        statusJSON.replace("CRC32", CRC);
                     } else {
                         System.out.println("File exists. Continue?(Y/N)");
                         Scanner scanner = new Scanner(System.in);
                         String chosen = scanner.nextLine();
-                        if (chosen.toLowerCase() == "y" || chosen.toLowerCase() == "yes") {
+                        if (chosen.toLowerCase().equals("y") || chosen.toLowerCase().equals("yes")) {
                             if (statusJSON.containsKey("Key")) {
                                 statusJSON.replace("Key", false);
                             }
@@ -97,13 +96,18 @@ public class HLSDownloader {
                 System.out.println("File exists. Continue?(Y/N)");
                 Scanner scanner = new Scanner(System.in);
                 String chosen = scanner.next();
-                if (!(chosen.toLowerCase() == "y" || chosen.toLowerCase() == "yes")) {
+                if (!(chosen.toLowerCase().equals("y") || chosen.toLowerCase().equals("yes"))) {
                     System.exit(0);
                 }
-            } else {
+            }
+            long CRC = FileUtils.checksumCRC32(playlistPath.toFile());
+            if (statusJSON == null) {
                 statusJSON = new JSONObject();
-                long CRC = FileUtils.checksumCRC32(playlistPath.toFile());
                 statusJSON.put("CRC32", CRC);
+            } else if (!statusJSON.containsKey("CRC32")) {
+                statusJSON.put("CRC32", CRC);
+            } else {
+                statusJSON.replace("CRC32", CRC);
             }
             BufferedWriter videoWriter = new BufferedWriter(new FileWriter(path.toFile(), true));
             BufferedWriter jsonWriter = new BufferedWriter(new FileWriter(jsonPath.toFile(), true));

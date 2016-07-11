@@ -23,7 +23,7 @@ public class DownloadManager {
                 filename = filename.substring(0, dotSite);
             }
             File file = new File(filePath + filename);
-            FileUtils.copyURLToFile(loc, file, 20000, 20000);
+            FileUtils.copyURLToFile(loc, file, 60000, 60000);
             return true;
         } catch (Exception e) {
             e.printStackTrace();

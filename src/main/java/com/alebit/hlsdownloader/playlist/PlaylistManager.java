@@ -18,6 +18,7 @@ import java.util.List;
  * Created by Alec on 2016/6/26.
  */
 public class PlaylistManager {
+    private InputStream inputStream;
     private String playlistURL;
     private String preURL;
     private Playlist playlist;
@@ -30,7 +31,7 @@ public class PlaylistManager {
     public PlaylistManager(String url) {
         playlistURL = url;
         try {
-            InputStream inputStream = new URL(playlistURL).openStream();
+            inputStream = new URL(playlistURL).openStream();
             PlaylistParser parser = new PlaylistParser(inputStream, Format.EXT_M3U, Encoding.UTF_8);
             playlist = parser.parse();
 
@@ -55,7 +56,7 @@ public class PlaylistManager {
     public PlaylistManager(File file) {
         playlistURL = file.getPath();
         try {
-            InputStream inputStream = new FileInputStream(file);
+            inputStream = new FileInputStream(file);
             PlaylistParser parser = new PlaylistParser(inputStream, Format.EXT_M3U, Encoding.UTF_8);
             playlist = parser.parse();
 
@@ -135,6 +136,14 @@ public class PlaylistManager {
 
     public byte[] getIV() {
         return iv;
+    }
+
+    public void close() {
+        try {
+            inputStream.close();
+        } catch (IOException e) {
+
+        }
     }
 
     private void setPreURL(String playlistURL) {

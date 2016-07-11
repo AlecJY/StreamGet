@@ -34,7 +34,6 @@ public class HLSDecrypter {
             for (int i = 0; i < tracks.size(); i++) {
                 TrackData trackData = tracks.get(i);
                 decryptManager.decrypt(new File(playlistManager.getPreURL() + trackData.getUri()), path.toFile(), true);
-                // decryptManager.decrypt(new File(playlistManager.getPreURL() + trackData.getUri()), new File(playlistManager.getPreURL() + trackData.getUri() + ".decrypted"), false);
             }
         } else {
             for (int i = 0; i < tracks.size(); i++) {
@@ -55,11 +54,13 @@ public class HLSDecrypter {
 
         try {
             if (!raw) {
+                playlistManager.close();
                 System.out.println("Deleteing temp file...");
                 FileUtils.deleteDirectory(playlistPath.getParent().toFile());
             }
         } catch (Exception e) {
             System.err.println("Delete " + playlistPath.getParent() + "failed");
+            e.printStackTrace();
             System.exit(-1);
         }
         System.out.println("Successfully download video!");
