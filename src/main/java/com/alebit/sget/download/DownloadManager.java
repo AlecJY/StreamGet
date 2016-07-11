@@ -1,13 +1,9 @@
-package com.alebit.hlsdownloader.download;
+package com.alebit.sget.download;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.net.URL;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
 
 /**
  * Created by Alec on 2016/6/26.

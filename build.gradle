@@ -1,4 +1,4 @@
-group 'com.alebit.hlsdownloader'
+group 'com.alebit.sget'
 version '1.11'
 
 apply plugin: 'java'
@@ -6,7 +6,7 @@ apply plugin: 'application'
 
 sourceCompatibility = 1.8
 
-mainClassName = 'com.alebit.hlsdownloader.Main'
+mainClassName = 'com.alebit.sget.Main'
 
 repositories {
     mavenCentral()

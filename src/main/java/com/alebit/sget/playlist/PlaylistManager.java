@@ -1,11 +1,10 @@
-package com.alebit.hlsdownloader.playlist;
+package com.alebit.sget.playlist;
 
 import com.iheartradio.m3u8.Encoding;
 import com.iheartradio.m3u8.Format;
 import com.iheartradio.m3u8.PlaylistParser;
 import com.iheartradio.m3u8.data.*;
 
-import java.awt.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;

@@ -1,8 +1,8 @@
-package com.alebit.hlsdownloader;
+package com.alebit.sget;
 
-import com.alebit.hlsdownloader.playlist.PlaylistManager;
-import com.alebit.hlsdownloader.download.HLSDownloader;
-import com.alebit.hlsdownloader.plugin.PluginManager;
+import com.alebit.sget.playlist.PlaylistManager;
+import com.alebit.sget.download.HLSDownloader;
+import com.alebit.sget.plugin.PluginManager;
 import com.iheartradio.m3u8.data.Resolution;
 
 import java.nio.file.Path;

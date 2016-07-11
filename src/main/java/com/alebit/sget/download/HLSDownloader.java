@@ -1,7 +1,7 @@
-package com.alebit.hlsdownloader.download;
+package com.alebit.sget.download;
 
-import com.alebit.hlsdownloader.decrypt.HLSDecrypter;
-import com.alebit.hlsdownloader.playlist.PlaylistManager;
+import com.alebit.sget.decrypt.HLSDecrypter;
+import com.alebit.sget.playlist.PlaylistManager;
 import com.iheartradio.m3u8.Encoding;
 import com.iheartradio.m3u8.Format;
 import com.iheartradio.m3u8.PlaylistWriter;

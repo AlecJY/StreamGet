@@ -1,4 +1,4 @@
-package com.alebit.hlsdownloader.plugin;
+package com.alebit.sget.plugin;
 
 /*
  * Copyright (c) 1995, 2008, Oracle and/or its affiliates. All rights reserved.

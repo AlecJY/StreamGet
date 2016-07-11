@@ -1,6 +1,6 @@
-package com.alebit.hlsdownloader.decrypt;
+package com.alebit.sget.decrypt;
 
-import com.alebit.hlsdownloader.playlist.PlaylistManager;
+import com.alebit.sget.playlist.PlaylistManager;
 import com.iheartradio.m3u8.data.TrackData;
 import org.apache.commons.io.FileUtils;
 

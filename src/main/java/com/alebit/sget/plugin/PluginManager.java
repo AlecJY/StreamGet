@@ -1,14 +1,10 @@
-package com.alebit.hlsdownloader.plugin;
+package com.alebit.sget.plugin;
 
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.Collection;
-import java.util.List;
-import java.util.jar.JarFile;
-import java.util.zip.ZipEntry;
 
 /**
  * Created by Alec on 2016/6/27.

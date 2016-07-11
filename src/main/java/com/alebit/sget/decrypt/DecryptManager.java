@@ -1,11 +1,10 @@
-package com.alebit.hlsdownloader.decrypt;
+package com.alebit.sget.decrypt;
 
 import javax.crypto.Cipher;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.*;
-import java.nio.Buffer;
 import java.security.*;
 
 /**

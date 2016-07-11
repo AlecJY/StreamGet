@@ -19,8 +19,8 @@
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
-      <module name="HLSDownloader_main" target="1.8" />
-      <module name="HLSDownloader_test" target="1.8" />
+      <module name="StreamGet_main" target="1.8" />
+      <module name="StreamGet_test" target="1.8" />
     </bytecodeTargetLevel>
   </component>
 </project>
