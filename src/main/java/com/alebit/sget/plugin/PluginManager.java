@@ -4,6 +4,8 @@ import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.net.MalformedURLException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collection;
 
 /**
@@ -12,10 +14,26 @@ import java.util.Collection;
 public class PluginManager {
     String[] args;
     public PluginManager(String[] args) {
-        File pluginsDir = new File("." + File.separator + "plugins");
-        pluginsDir.mkdirs();
-        Collection<File> files = FileUtils.listFiles(pluginsDir, new String[]{"jar"}, true);
-        if (files.size() > 0) {
+        Path jarPath = null;
+        try {
+            jarPath = Paths.get(PluginManager.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+            if (jarPath.toFile().isDirectory()) {
+                jarPath = null;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        File pluginsDir;
+        if (jarPath == null) {
+            pluginsDir = new File("." + File.separator + "plugins");
+        } else {
+            pluginsDir = new File(jarPath.getParent().getParent().toString() + File.separator + "plugins");
+        }
+        Collection<File> files = null;
+        if (pluginsDir.exists()) {
+            files = FileUtils.listFiles(pluginsDir, new String[]{"jar"}, true);
+        }
+        if (files != null && files.size() > 0) {
             for (File file: files) {
                 try {
                     PluginLoader pluginLoader = new PluginLoader(file.toURI().toURL());
