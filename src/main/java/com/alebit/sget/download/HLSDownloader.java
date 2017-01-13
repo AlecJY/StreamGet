@@ -36,6 +36,9 @@ public class HLSDownloader {
     private boolean raw;
 
     public HLSDownloader(PlaylistManager playlistManager, Path path, boolean raw) {
+        if (path.getParent() == null) {
+            path = Paths.get("." + File.separator + path.toString());
+        }
         this.raw = raw;
         this.playlistManager = playlistManager;
         tracks = playlistManager.getTracks();
@@ -190,7 +193,7 @@ public class HLSDownloader {
             }
             if (!status) {
                 System.out.println("Downloading encrypt key...");
-                if (tracks.get(0).getEncryptionData().getUri().contains("://")) {
+                /* if (tracks.get(0).getEncryptionData().getUri().contains("://")) {
                     downs = downloadManager.download(tracks.get(0).getEncryptionData().getUri(), partPath.toString() + File.separator);
                 } else {
                     downs = downloadManager.download(playlistManager.getPreURL() + tracks.get(0).getEncryptionData().getUri(), partPath.toString() + File.separator);
@@ -198,7 +201,7 @@ public class HLSDownloader {
                 if (!downs) {
                     System.err.println("Download Failed. Please try again later.");
                     System.exit(-1);
-                }
+                } */
                 setKeyProgress(true);
             }
         }

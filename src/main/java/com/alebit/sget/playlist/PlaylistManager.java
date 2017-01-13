@@ -2,6 +2,7 @@ package com.alebit.sget.playlist;
 
 import com.iheartradio.m3u8.Encoding;
 import com.iheartradio.m3u8.Format;
+import com.iheartradio.m3u8.ParsingMode;
 import com.iheartradio.m3u8.PlaylistParser;
 import com.iheartradio.m3u8.data.*;
 import org.json.simple.parser.ParseException;
@@ -32,7 +33,7 @@ public class PlaylistManager {
         playlistURL = url;
         try {
             inputStream = new URL(playlistURL).openStream();
-            PlaylistParser parser = new PlaylistParser(inputStream, Format.EXT_M3U, Encoding.UTF_8);
+            PlaylistParser parser = new PlaylistParser(inputStream, Format.EXT_M3U, Encoding.UTF_8, ParsingMode.LENIENT);
             playlist = parser.parse();
 
             version = playlist.getCompatibilityVersion();
@@ -49,6 +50,7 @@ public class PlaylistManager {
             System.err.println("Invalid URL: " + e.getMessage());
             System.exit(-1);
         } catch (com.iheartradio.m3u8.ParseException e) {
+            e.printStackTrace();
             System.err.println("Invalid m3u8 playlist");
             System.exit(-1);
         } catch (Exception e) {
@@ -60,7 +62,7 @@ public class PlaylistManager {
         playlistURL = file.getPath();
         try {
             inputStream = new FileInputStream(file);
-            PlaylistParser parser = new PlaylistParser(inputStream, Format.EXT_M3U, Encoding.UTF_8);
+            PlaylistParser parser = new PlaylistParser(inputStream, Format.EXT_M3U, Encoding.UTF_8, ParsingMode.LENIENT);
             playlist = parser.parse();
 
             version = playlist.getCompatibilityVersion();
