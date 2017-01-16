@@ -5,12 +5,10 @@ import com.iheartradio.m3u8.Format;
 import com.iheartradio.m3u8.ParsingMode;
 import com.iheartradio.m3u8.PlaylistParser;
 import com.iheartradio.m3u8.data.*;
+import org.apache.commons.io.IOUtils;
 import org.json.simple.parser.ParseException;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +18,7 @@ import java.util.List;
  */
 public class PlaylistManager {
     private InputStream inputStream;
+    private ByteArrayOutputStream outputStream;
     private String playlistURL;
     private String preURL;
     private Playlist playlist;
@@ -28,11 +27,15 @@ public class PlaylistManager {
     private List<PlaylistData> masterPlaylistData;
     private byte[] iv;
     private int version;
+    private boolean playlistType = false; // false: m3u8 true: MPEG-DASH
 
     public PlaylistManager(String url) {
         playlistURL = url;
         try {
             inputStream = new URL(playlistURL).openStream();
+            outputStream = new ByteArrayOutputStream();
+            IOUtils.copy(inputStream, outputStream);
+            inputStream = new ByteArrayInputStream(outputStream.toByteArray());
             PlaylistParser parser = new PlaylistParser(inputStream, Format.EXT_M3U, Encoding.UTF_8, ParsingMode.LENIENT);
             playlist = parser.parse();
 
@@ -47,12 +50,20 @@ public class PlaylistManager {
 
             setIV();
         } catch (IOException e) {
-            System.err.println("Invalid URL: " + e.getMessage());
+            System.err.println("Invalid URL: " + url);
             System.exit(-1);
         } catch (com.iheartradio.m3u8.ParseException e) {
-            e.printStackTrace();
-            System.err.println("Invalid m3u8 playlist");
-            System.exit(-1);
+            if (e.getInput().startsWith("<?xml")) {
+                playlistType = true;
+                inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+                DASHPlaylistManager dashPlaylistManager = new DASHPlaylistManager(inputStream);
+
+                System.exit(-1);
+            } else {
+                e.printStackTrace();
+                System.err.println("Invalid m3u8 playlist");
+                System.exit(-1);
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
