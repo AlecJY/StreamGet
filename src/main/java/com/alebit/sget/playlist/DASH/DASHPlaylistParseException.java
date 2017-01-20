@@ -1,4 +1,4 @@
-package com.alebit.sget.playlist;
+package com.alebit.sget.playlist.DASH;
 
 /**
  * Created by alec on 2017/1/16.

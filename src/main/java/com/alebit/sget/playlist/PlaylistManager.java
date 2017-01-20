@@ -1,12 +1,12 @@
 package com.alebit.sget.playlist;
 
+import com.alebit.sget.playlist.DASH.DASHPlaylistManager;
 import com.iheartradio.m3u8.Encoding;
 import com.iheartradio.m3u8.Format;
 import com.iheartradio.m3u8.ParsingMode;
 import com.iheartradio.m3u8.PlaylistParser;
 import com.iheartradio.m3u8.data.*;
 import org.apache.commons.io.IOUtils;
-import org.json.simple.parser.ParseException;
 
 import java.io.*;
 import java.net.URL;
@@ -28,6 +28,7 @@ public class PlaylistManager {
     private byte[] iv;
     private int version;
     private boolean playlistType = false; // false: m3u8 true: MPEG-DASH
+    private DASHPlaylistManager dashPlaylistManager;
 
     public PlaylistManager(String url) {
         playlistURL = url;
@@ -56,9 +57,8 @@ public class PlaylistManager {
             if (e.getInput().startsWith("<?xml")) {
                 playlistType = true;
                 inputStream = new ByteArrayInputStream(outputStream.toByteArray());
-                DASHPlaylistManager dashPlaylistManager = new DASHPlaylistManager(inputStream);
-
-                System.exit(-1);
+                dashPlaylistManager = new DASHPlaylistManager(inputStream);
+                dashPlaylistManager.setURI(url);
             } else {
                 e.printStackTrace();
                 System.err.println("Invalid m3u8 playlist");
@@ -183,5 +183,13 @@ public class PlaylistManager {
                 }
             }
         }
+    }
+
+    public boolean isDASH() {
+        return playlistType;
+    }
+
+    public DASHPlaylistManager getDASHPlaylist() {
+        return dashPlaylistManager;
     }
 }

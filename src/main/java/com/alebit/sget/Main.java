@@ -1,5 +1,6 @@
 package com.alebit.sget;
 
+import com.alebit.sget.playlist.DASH.DASHPlaylistManager;
 import com.alebit.sget.playlist.PlaylistManager;
 import com.alebit.sget.download.HLSDownloader;
 import com.alebit.sget.plugin.PluginManager;
@@ -32,16 +33,23 @@ public class Main {
         }
         String url = args[0];
         PlaylistManager playlistManager = new PlaylistManager(url);
-        while (true) {
-            if (playlistManager.hasMasterPlaylist()) {
-                int index = 0;
-                if (playlistManager.getPlaylistResolution() != null && playlistManager.getPlaylistResolution().size() > 1) {
-                    index = chooseResolution(playlistManager.getPlaylistResolution());
+        if (playlistManager.isDASH()) {
+            DASHPlaylistManager dashPlaylistManager = playlistManager.getDASHPlaylist();
+            if (dashPlaylistManager.getAudioRepresentations().length > 1) {
+
+            }
+        } else {
+            while (true) {
+                if (playlistManager.hasMasterPlaylist()) {
+                    int index = 0;
+                    if (playlistManager.getPlaylistResolution() != null && playlistManager.getPlaylistResolution().size() > 1) {
+                        index = chooseResolution(playlistManager.getPlaylistResolution());
+                    }
+                    url = playlistManager.getPreURL().concat(playlistManager.getPlaylistData(index).getUri());
+                    playlistManager = new PlaylistManager(url);
+                } else {
+                    break;
                 }
-                url = playlistManager.getPreURL().concat(playlistManager.getPlaylistData(index).getUri());
-                playlistManager = new PlaylistManager(url);
-            } else {
-                break;
             }
         }
         Path path = Paths.get(args[1]);
