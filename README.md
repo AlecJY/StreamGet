@@ -1,21 +1,26 @@
 # StreamGet
-Resumable HLS Downloader
+Resumable HLS and MPEG-DASH Downloader
 
 ## Usage
 ```
 StreamGet [OPTIONS] [-o|--output] FILENAME URL
  FILENAME	The output video name
- URL     	HTTP Live Stream playlist URL
+ URL		Media Stream playlist URL
 
 Option: 
  -h	--help	Print this help text
- -r	--raw	Not delete raw video stream
+ -r	--raw	Not delete raw video stream (no effect to MPEG-DASH)
 ```
 
 ## Output Video Format
-The output video format isn't standard MPEG-TS format, so some video player cannot play this format. You can convert videos using ffmpeg or other video converter
+### HLS
+The output video format isn't standard MPEG-TS format, so some video player cannot play this format. You can convert videos using ffmpeg or other video converter.
+
+### MPEG-DASH (experimental)
+Download all video and audio segments into a folder only. You need a media player which is support  MPEG-DASH to play, such as VLC Media Player or other javascript-based media player.
+
 
 ## Plugins
-You can use plugins to help you fetch m3u8 url more easily.
+You can use plugins to help you fetch playlist url more easily.
 
 See plugin example (Not finish yet)

@@ -96,7 +96,7 @@ public class PluginManager {
             } catch (Exception e) {
                 System.out.println("Usage: StreamGet [OPTIONS] [-o|--output] FILENAME URL");
                 System.out.println(" FILENAME\tThe output video name");
-                System.out.println(" URL     \tHTTP Live Stream playlist URL");
+                System.out.println(" URL     \tMedia Stream playlist URL (no effect to MPEG-DASH)");
                 System.out.println();
                 System.out.println("Option: ");
                 System.out.println(" -h\t--help\tPrint this help text");

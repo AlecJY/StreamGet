@@ -138,6 +138,8 @@ public class StreamDownloader {
             jsonWriter.close();
             if (playlistManager.isDASH()) {
                 downloadDASH(progress);
+                jsonPath.toFile().delete();
+                System.out.println("Successfully download video!");
             } else {
                 downloadHLS(progress);
                 videoWriter.close();
