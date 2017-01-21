@@ -113,7 +113,7 @@ public class StreamDownloader {
                     }
                 } catch (Exception e) {
                 }
-            } else if (path.toFile().exists()) {
+            } else if (!playlistManager.isDASH() && path.toFile().exists()) {
                 System.out.println("File exists. Continue?(Y/N)");
                 Scanner scanner = new Scanner(System.in);
                 String chosen = scanner.next();
@@ -245,12 +245,12 @@ public class StreamDownloader {
 
     private void downloadDASH(int index) {
         DownloadManager downloadManager = new DownloadManager();
-        boolean downStatus = downloadManager.download(dashPlaylistManager.getAudioInitializationURI(), partPath.toString() + File.separator);
+        boolean downStatus = downloadManager.download(dashPlaylistManager.getAudioInitializationURI(), partPath.toString() + File.separator + dashPlaylistManager.audioID() + File.separator);
         if (!downStatus) {
             System.err.println("Download Failed. Please try again later.");
             System.exit(-1);
         }
-        downStatus = downloadManager.download(dashPlaylistManager.getVideoInitializationURI(), partPath.toString() + File.separator);
+        downStatus = downloadManager.download(dashPlaylistManager.getVideoInitializationURI(), partPath.toString() + File.separator + dashPlaylistManager.videoID() + File.separator);
         if (!downStatus) {
             System.err.println("Download Failed. Please try again later.");
             System.exit(-1);
@@ -261,14 +261,14 @@ public class StreamDownloader {
         for (int i = index + 1; i < segNum; i++) {
             System.out.println("Downloading video: " + Math.round(((float)i / (float)segNum)*100) + "% (" + (i+1) + "/" + segNum + ")");
             if (i < audioSegNum) {
-                downStatus = downloadManager.download(dashPlaylistManager.getAudioSegURI(i), partPath.toString() + File.separator);
+                downStatus = downloadManager.download(dashPlaylistManager.getAudioSegURI(i), partPath.toString() + File.separator + dashPlaylistManager.audioID() + File.separator);
                 if (!downStatus) {
                     System.err.println("Download Failed. Please try again later.");
                     System.exit(-1);
                 }
             }
             if (i < videoSegNum) {
-                downStatus = downloadManager.download(dashPlaylistManager.getVideoSegURI(i), partPath.toString() + File.separator);
+                downStatus = downloadManager.download(dashPlaylistManager.getVideoSegURI(i), partPath.toString() + File.separator + dashPlaylistManager.videoID() + File.separator);
                 if (!downStatus) {
                     System.err.println("Download Failed. Please try again later.");
                     System.exit(-1);
