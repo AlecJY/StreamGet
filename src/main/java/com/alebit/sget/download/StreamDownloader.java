@@ -1,6 +1,7 @@
 package com.alebit.sget.download;
 
 import com.alebit.sget.decrypt.HLSDecrypter;
+import com.alebit.sget.playlist.DASH.DASHPlaylistManager;
 import com.alebit.sget.playlist.PlaylistManager;
 import com.iheartradio.m3u8.Encoding;
 import com.iheartradio.m3u8.Format;
@@ -24,8 +25,9 @@ import java.util.Scanner;
 /**
  * Created by Alec on 2016/6/26.
  */
-public class HLSDownloader {
+public class StreamDownloader {
     private PlaylistManager playlistManager;
+    private DASHPlaylistManager dashPlaylistManager;
     private List<TrackData> tracks;
     private Path path;
     private Path partPath;
@@ -35,13 +37,18 @@ public class HLSDownloader {
     private int progress = -1;
     private boolean raw;
 
-    public HLSDownloader(PlaylistManager playlistManager, Path path, boolean raw) {
+    public StreamDownloader(PlaylistManager playlistManager, Path path, boolean raw) {
         if (path.getParent() == null) {
             path = Paths.get("." + File.separator + path.toString());
         }
+        if (playlistManager.isDASH()) {
+            dashPlaylistManager = playlistManager.getDASHPlaylist();
+        }
         this.raw = raw;
         this.playlistManager = playlistManager;
-        tracks = playlistManager.getTracks();
+        if (!playlistManager.isDASH()) {
+            tracks = playlistManager.getTracks();
+        }
         this.path = path;
         int dotSite = path.getFileName().toString().lastIndexOf(".");
         if (dotSite > 0) {
@@ -55,11 +62,22 @@ public class HLSDownloader {
     public void prepare() {
         try {
             path.getParent().toFile().mkdirs();
-            jsonPath = Paths.get(path.getParent().toString() + File.separator + filename + "_part" + File.separator + "status.json");
+            if (playlistManager.isDASH()) {
+                jsonPath = Paths.get(path.getParent().toString() + File.separator + filename + File.separator + "status.json");
+            } else {
+                jsonPath = Paths.get(path.getParent().toString() + File.separator + filename + "_part" + File.separator + "status.json");
+            }
             jsonPath.getParent().toFile().mkdirs();
             partPath = jsonPath.getParent();
-            Path playlistPath = Paths.get(path.getParent().toString() + File.separator + filename + "_part" + File.separator + filename + ".m3u8");
-            writeToPlaylist(playlistPath);
+            Path playlistPath;
+            if (playlistManager.isDASH()) {
+                playlistPath = Paths.get(jsonPath.getParent().toString() + File.separator + filename + ".mpd");
+                writeToDashPlaylist(playlistPath);
+            } else {
+                playlistPath = Paths.get(path.getParent().toString() + File.separator + filename + "_part" + File.separator + filename + ".m3u8");
+                writeToPlaylist(playlistPath);
+            }
+
             statusJSON = readJSON(jsonPath);
             if (statusJSON != null) {
                 try {
@@ -112,15 +130,20 @@ public class HLSDownloader {
             } else {
                 statusJSON.replace("CRC32", CRC);
             }
-            BufferedWriter videoWriter = new BufferedWriter(new FileWriter(path.toFile(), true));
+            BufferedWriter videoWriter = null;
+            if (!playlistManager.isDASH()) {
+                videoWriter = new BufferedWriter(new FileWriter(path.toFile(), false));
+            }
             BufferedWriter jsonWriter = new BufferedWriter(new FileWriter(jsonPath.toFile(), true));
             jsonWriter.close();
-            downloadHLS(progress);
-            videoWriter.close();
-            videoWriter = new BufferedWriter(new FileWriter(path.toFile()));
-            videoWriter.close();
-            System.out.println("Converting video...");
-            new HLSDecrypter(path, raw);
+            if (playlistManager.isDASH()) {
+                downloadDASH(progress);
+            } else {
+                downloadHLS(progress);
+                videoWriter.close();
+                System.out.println("Converting video...");
+                new HLSDecrypter(path, raw);
+            }
         } catch (IOException e) {
             System.err.println("Write permission not allowed: " + e.getMessage());
             System.exit(-1);
@@ -155,6 +178,10 @@ public class HLSDownloader {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private void writeToDashPlaylist(Path path) {
+        dashPlaylistManager.saveManifest(path);
     }
 
     private MediaPlaylist modifyMediaPlaylist(MediaPlaylist mediaPlaylist) {
@@ -211,6 +238,41 @@ public class HLSDownloader {
             if (!downStatus) {
                 System.err.println("Download Failed. Please try again later.");
                 System.exit(-1);
+            }
+            setProgress(i);
+        }
+    }
+
+    private void downloadDASH(int index) {
+        DownloadManager downloadManager = new DownloadManager();
+        boolean downStatus = downloadManager.download(dashPlaylistManager.getAudioInitializationURI(), partPath.toString() + File.separator);
+        if (!downStatus) {
+            System.err.println("Download Failed. Please try again later.");
+            System.exit(-1);
+        }
+        downStatus = downloadManager.download(dashPlaylistManager.getVideoInitializationURI(), partPath.toString() + File.separator);
+        if (!downStatus) {
+            System.err.println("Download Failed. Please try again later.");
+            System.exit(-1);
+        }
+        int audioSegNum = dashPlaylistManager.getAudioSegNumber();
+        int videoSegNum = dashPlaylistManager.getVideoSegNumber();
+        int segNum = audioSegNum > videoSegNum? audioSegNum: videoSegNum;
+        for (int i = index + 1; i < segNum; i++) {
+            System.out.println("Downloading video: " + Math.round(((float)i / (float)segNum)*100) + "% (" + (i+1) + "/" + segNum + ")");
+            if (i < audioSegNum) {
+                downStatus = downloadManager.download(dashPlaylistManager.getAudioSegURI(i), partPath.toString() + File.separator);
+                if (!downStatus) {
+                    System.err.println("Download Failed. Please try again later.");
+                    System.exit(-1);
+                }
+            }
+            if (i < videoSegNum) {
+                downStatus = downloadManager.download(dashPlaylistManager.getVideoSegURI(i), partPath.toString() + File.separator);
+                if (!downStatus) {
+                    System.err.println("Download Failed. Please try again later.");
+                    System.exit(-1);
+                }
             }
             setProgress(i);
         }

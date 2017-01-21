@@ -49,4 +49,8 @@ public class Representation {
     public String getHeight() {
         return height;
     }
+
+    public String getBandwidth() {
+        return bandwidth;
+    }
 }

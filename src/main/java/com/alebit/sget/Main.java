@@ -1,8 +1,9 @@
 package com.alebit.sget;
 
 import com.alebit.sget.playlist.DASH.DASHPlaylistManager;
+import com.alebit.sget.playlist.DASH.Representation;
 import com.alebit.sget.playlist.PlaylistManager;
-import com.alebit.sget.download.HLSDownloader;
+import com.alebit.sget.download.StreamDownloader;
 import com.alebit.sget.plugin.PluginManager;
 import com.iheartradio.m3u8.data.Resolution;
 
@@ -36,7 +37,14 @@ public class Main {
         if (playlistManager.isDASH()) {
             DASHPlaylistManager dashPlaylistManager = playlistManager.getDASHPlaylist();
             if (dashPlaylistManager.getAudioRepresentations().length > 1) {
-
+                Representation[] audioRepresentations = dashPlaylistManager.getAudioRepresentations();
+                int index = chooseAudio(audioRepresentations);
+                dashPlaylistManager.chooseAudioRepresentation(index);
+            }
+            if (dashPlaylistManager.getVideoRepresentations().length > 1) {
+                Representation[] videoRepresentations = dashPlaylistManager.getVideoRepresentations();
+                int index = chooseVideo(videoRepresentations);
+                dashPlaylistManager.chooseVideoRepresentation(index);
             }
         } else {
             while (true) {
@@ -54,7 +62,7 @@ public class Main {
         }
         Path path = Paths.get(args[1]);
         boolean raw = Boolean.parseBoolean(args[2]);
-        HLSDownloader downloader = new HLSDownloader(playlistManager, path, raw);
+        StreamDownloader downloader = new StreamDownloader(playlistManager, path, raw);
     }
 
     private int chooseResolution(List<Resolution> resolutionList) {
@@ -80,6 +88,58 @@ public class Main {
             }
         }
         return chosenNum;
+    }
+
+    private int chooseAudio(Representation[] audioRepresentations) {
+        while (true) {
+            System.out.println("Please choose audio tracks:");
+            for (int i = 0; i < audioRepresentations.length; i++) {
+                if (audioRepresentations[i].getAudioSamplingRate().equals("")) {
+                    System.out.println("[" + (i + 1) + "]: Bandwidth: " + audioRepresentations[i].getBandwidth());
+                } else {
+                    System.out.println("[" + (i + 1) + "]: Bandwidth:" + audioRepresentations[i].getBandwidth() + ", SamplingRate:" + audioRepresentations[i].getAudioSamplingRate());
+                }
+            }
+            System.out.print("\n=> ");
+            String chosen = scanner.next();
+            int chosenNum;
+            try {
+                chosenNum = Integer.parseInt(chosen);
+                if (chosenNum < 1 || chosenNum > audioRepresentations.length) {
+                    System.out.println("Illegal input. Please choose again\n");
+                } else {
+                    System.out.println();
+                    chosenNum--;
+                    return chosenNum;
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Illegal input. Please choose again.\n");
+            }
+        }
+    }
+
+    private int chooseVideo(Representation[] videoRepresentations) {
+        while (true) {
+            System.out.println("Please choose video resolution:");
+            for (int i = 0; i < videoRepresentations.length; i++) {
+                System.out.println("[" + (i + 1) + "]: " + videoRepresentations[i].getWidth() + "x" + videoRepresentations[i].getHeight());
+            }
+            System.out.print("\n=> ");
+            String chosen = scanner.next();
+            int chosenNum;
+            try {
+                chosenNum = Integer.parseInt(chosen);
+                if (chosenNum < 1 || chosenNum > videoRepresentations.length) {
+                    System.out.println("Illegal input. Please choose again\n");
+                } else {
+                    System.out.println();
+                    chosenNum--;
+                    return chosenNum;
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Illegal input. Please choose again.\n");
+            }
+        }
     }
 
     public static void main(String[] args) {
