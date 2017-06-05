@@ -39,8 +39,8 @@ public class HLSDecrypter {
             for (int i = 0; i < tracks.size(); i++) {
                 TrackData trackData = tracks.get(i);
                 try {
-                    FileInputStream fileInputStream = new FileInputStream(trackData.getUri());
-                    byte[] data = new byte[(int) new File(trackData.getUri()).length()];
+                    FileInputStream fileInputStream = new FileInputStream(playlistManager.getPreURL() + trackData.getUri());
+                    byte[] data = new byte[(int) new File(playlistManager.getPreURL() + trackData.getUri()).length()];
                     fileInputStream.read(data);
                     FileOutputStream fileOutputStream = new FileOutputStream(path.toFile(), true);
                     fileOutputStream.write(data);
