@@ -16,9 +16,12 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 import java.io.*;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.MessageDigest;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import java.util.Scanner;
 
@@ -81,10 +84,12 @@ public class StreamDownloader {
             statusJSON = readJSON(jsonPath);
             if (statusJSON != null) {
                 try {
-                    long CRC = FileUtils.checksumCRC32(playlistPath.toFile());
-                    if (statusJSON.containsKey("CRC32")) {
-                        long oldCRC = (long) statusJSON.get("CRC32");
-                        if (CRC == oldCRC) {
+                    MessageDigest digest = MessageDigest.getInstance("SHA-256");
+                    byte[] shaByte = digest.digest(Files.readAllBytes(playlistPath));
+                    String sha = Base64.getEncoder().encodeToString(shaByte);
+                    if (statusJSON.containsKey("SHA256")) {
+                        String oldSha = (String) statusJSON.get("SHA256");
+                        if (sha.equals(oldSha)) {
                             progress = (int) (long) statusJSON.get("Progress");
                         } else {
                             System.out.println("File exists. Continue?(Y/N)");
@@ -109,7 +114,7 @@ public class StreamDownloader {
                         } else {
                             System.exit(0);
                         }
-                        statusJSON.put("CRC32", CRC);
+                        statusJSON.put("SHA256", sha);
                     }
                 } catch (Exception e) {
                 }
