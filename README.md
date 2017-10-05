@@ -22,5 +22,8 @@ Download all video and audio segments into a folder only. You need a media playe
 
 ## Plugins
 You can use plugins to help you fetch playlist url more easily.
+### Use plugins
+Add a folder called "plugins", then put a StreamGet jar plugin into folder
 
-See plugin example (Not finish yet)
+### Make your own plugins
+See [plugin example](example/StreamGet-PluginExample)

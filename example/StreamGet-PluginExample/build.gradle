@@ -1,0 +1,25 @@
+group 'com.alebit.sget.pluginexample'
+version '1.0'
+
+apply plugin: 'java'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+}
+
+jar {
+    manifest {
+        attributes(
+                // add plugin information to jar manifest
+                'Plugin-Class': 'com.alebit.sget.pluginexample.PluginMain', // the entry point of your plugin
+                "Plugin-Name": 'Plugin Example', // the name of your plugin
+                'Plugin-Version': 1.0, // the version of your plugin
+                'Plugin-Loader-Version': 1.1) // The version of StreamGet plugin loader
+    }
+}
