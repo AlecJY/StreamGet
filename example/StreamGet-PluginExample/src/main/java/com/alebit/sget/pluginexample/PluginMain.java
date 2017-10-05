@@ -8,7 +8,7 @@ public class PluginMain {
         // the variable "args" will get arguments input from program
         // then do what you want to do below
         Scanner scn = new Scanner(System.in);
-        System.out.println("Please specify the video URL you want to download");
+        System.out.println("Please specify the video playlist URL you want to download");
         System.out.print("=> ");
         String videoURL = scn.nextLine();
         System.out.println("\nPlease specify the file name you want of the video");
