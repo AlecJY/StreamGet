@@ -10,7 +10,6 @@ import com.iheartradio.m3u8.data.EncryptionData;
 import com.iheartradio.m3u8.data.MediaPlaylist;
 import com.iheartradio.m3u8.data.Playlist;
 import com.iheartradio.m3u8.data.TrackData;
-import org.apache.commons.io.FileUtils;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -20,6 +19,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
@@ -116,6 +116,8 @@ public class StreamDownloader {
                         }
                         statusJSON.put("SHA256", sha);
                     }
+                } catch (NoSuchAlgorithmException e) {
+                    System.err.println("Cannot use SHA-256. File checker disabled.");
                 } catch (Exception e) {
                 }
             } else if (!playlistManager.isDASH() && path.toFile().exists()) {
@@ -126,14 +128,21 @@ public class StreamDownloader {
                     System.exit(0);
                 }
             }
-            long CRC = FileUtils.checksumCRC32(playlistPath.toFile());
+            String sha = "";
+            try {
+                MessageDigest digest = MessageDigest.getInstance("SHA-256");
+                byte[] shaByte = digest.digest(Files.readAllBytes(playlistPath));
+                sha = Base64.getEncoder().encodeToString(shaByte);
+            } catch (NoSuchAlgorithmException e) {
+                System.err.println("Cannot use SHA-256. File checker disabled.");
+            }
             if (statusJSON == null) {
                 statusJSON = new JSONObject();
-                statusJSON.put("CRC32", CRC);
-            } else if (!statusJSON.containsKey("CRC32")) {
-                statusJSON.put("CRC32", CRC);
+                statusJSON.put("SHA256", sha);
+            } else if (!statusJSON.containsKey("SHA256")) {
+                statusJSON.put("SHA256", sha);
             } else {
-                statusJSON.replace("CRC32", CRC);
+                statusJSON.replace("SHA256", sha);
             }
             BufferedWriter videoWriter = null;
             if (!playlistManager.isDASH()) {
