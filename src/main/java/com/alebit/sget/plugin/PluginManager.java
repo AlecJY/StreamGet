@@ -37,7 +37,7 @@ public class PluginManager {
             for (File file: files) {
                 try {
                     PluginLoader pluginLoader = new PluginLoader(file.toURI().toURL());
-                    if (pluginLoader.getPluginLoaderVersion().equals("1.1")) {
+                    if (pluginLoader.getPluginLoaderVersion().equals("1.1") || pluginLoader.getPluginLoaderVersion().equals("1.2")) {
                         args = pluginLoader.invokeClass(pluginLoader.getPluginClassName(), args);
                     }
                     break;
@@ -48,8 +48,10 @@ public class PluginManager {
                 }
             }
         } else {
-            String[] newArgs = new String[3];
+            String[] newArgs = new String[5];
             newArgs[2] = "false";
+            newArgs[3] = "0";
+            newArgs[4] = "0";
             try {
                 for (int i = 0; i < args.length; i++) {
                     switch (args[i].charAt(0)) {
@@ -68,6 +70,58 @@ public class PluginManager {
                                 case "--raw":
                                 case "-r":
                                     newArgs[2] = "true";
+                                    break;
+                                case "-v":
+                                case "--video":
+                                    switch (args[i+1].toLowerCase()) {
+                                        case "l":
+                                        case "lowest":
+                                            newArgs[3] = "-1";
+                                            break;
+                                        case "h":
+                                        case "highest":
+                                            newArgs[3] = "-2";
+                                            break;
+                                        default:
+                                        try {
+                                            int resNum = Integer.parseInt(args[i + 1]);
+                                            i++;
+                                            if (resNum < 1) {
+                                                System.err.println("Wrong argument after \"" + args[i] + "\": " + args[i + 1]);
+                                                throw new IllegalArgumentException();
+                                            }
+                                            newArgs[3] = Integer.toString(resNum);
+                                        } catch (Exception e) {
+                                            System.err.println("Wrong argument after \"" + args[i] + "\": " + args[i + 1]);
+                                            throw new IllegalArgumentException();
+                                        }
+                                    }
+                                    break;
+                                case "-a":
+                                case "--audio":
+                                    switch (args[i+1].toLowerCase()) {
+                                        case "l":
+                                        case "lowest":
+                                            newArgs[4] = "-1";
+                                            break;
+                                        case "h":
+                                        case "highest":
+                                            newArgs[4] = "-2";
+                                            break;
+                                        default:
+                                            try {
+                                                int resNum = Integer.parseInt(args[i + 1]);
+                                                i++;
+                                                if (resNum < 1) {
+                                                    System.err.println("Wrong argument after \"" + args[i] + "\": " + args[i + 1]);
+                                                    throw new IllegalArgumentException();
+                                                }
+                                                newArgs[4] = Integer.toString(resNum);
+                                            } catch (Exception e) {
+                                                System.err.println("Wrong argument after \"" + args[i] + "\": " + args[i + 1]);
+                                                throw new IllegalArgumentException();
+                                            }
+                                    }
                                     break;
                                 case "--help":
                                 case "-h":
@@ -101,6 +155,14 @@ public class PluginManager {
                 System.out.println("Option: ");
                 System.out.println(" -h\t--help\tPrint this help text");
                 System.out.println(" -r\t--raw\tNot delete raw video stream");
+                System.out.println("-v\t--video\t[l | lowest | h | highest | NUMBER]\tSelect video representation");
+                System.out.println("\t\t\t[l | lowest] Select lowest resolution video");
+                System.out.println("\t\t\t[h | highest] Select highest resolution video");
+                System.out.println("\t\t\t[NUMBER] Select video number (Start from 1)");
+                System.out.println("-a\t--audio\t[l | lowest | h | highest | NUMBER]\tSelect audio representation");
+                System.out.println("\t\t\t[l | lowest] Select lowest quality audio");
+                System.out.println("\t\t\t[h | highest] Select highest quality audio");
+                System.out.println("\t\t\t[NUMBER] Select audio number (Start from 1)");
                 System.exit(0);
             }
             args = newArgs;

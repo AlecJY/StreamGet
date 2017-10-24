@@ -23,27 +23,39 @@ public class Main {
         PluginManager pluginManager = new PluginManager(args);
         args = pluginManager.getArgs();
         if (args.length == 2) {
-            String[] formatArgs = new String[3];
+            String[] formatArgs = new String[5];
             formatArgs[0] = args[0];
             formatArgs[1] = args[1];
             formatArgs[2] = "false";
+            formatArgs[3] = "0";
+            formatArgs[4] = "0";
             args = formatArgs;
-        } else if (args.length != 3) {
+        } else if (args.length == 3) {
+            String[] formatArgs = new String[5];
+            formatArgs[0] = args[0];
+            formatArgs[1] = args[1];
+            formatArgs[2] = args[2];
+            formatArgs[3] = "0";
+            formatArgs[4] = "0";
+            args = formatArgs;
+        } else if (args.length != 5) {
             System.err.println("Wrong arguments");
             System.exit(-1);
         }
         String url = args[0];
+        int video = Integer.parseInt(args[3]);
+        int audio = Integer.parseInt(args[4]);
         PlaylistManager playlistManager = new PlaylistManager(url);
         if (playlistManager.isDASH()) {
             DASHPlaylistManager dashPlaylistManager = playlistManager.getDASHPlaylist();
             if (dashPlaylistManager.getAudioRepresentations().length > 1) {
                 Representation[] audioRepresentations = dashPlaylistManager.getAudioRepresentations();
-                int index = chooseAudio(audioRepresentations);
+                int index = chooseAudio(audioRepresentations, audio);
                 dashPlaylistManager.chooseAudioRepresentation(index);
             }
             if (dashPlaylistManager.getVideoRepresentations().length > 1) {
                 Representation[] videoRepresentations = dashPlaylistManager.getVideoRepresentations();
-                int index = chooseVideo(videoRepresentations);
+                int index = chooseVideo(videoRepresentations, video);
                 dashPlaylistManager.chooseVideoRepresentation(index);
             }
         } else {
@@ -51,7 +63,7 @@ public class Main {
                 if (playlistManager.hasMasterPlaylist()) {
                     int index = 0;
                     if (playlistManager.getPlaylistResolution() != null && playlistManager.getPlaylistResolution().size() > 1) {
-                        index = chooseResolution(playlistManager.getPlaylistResolution());
+                        index = chooseResolution(playlistManager.getPlaylistResolution(), video);
                     }
                     url = playlistManager.getPreURL().concat(playlistManager.getPlaylistData(index).getUri());
                     playlistManager = new PlaylistManager(url);
@@ -65,7 +77,30 @@ public class Main {
         StreamDownloader downloader = new StreamDownloader(playlistManager, path, raw);
     }
 
-    private int chooseResolution(List<Resolution> resolutionList) {
+    private int chooseResolution(List<Resolution> resolutionList, int video) {
+        if (video != 0) {
+            if (video < 0) {
+                int[] resolutions = new int[resolutionList.size()];
+                for (int i = 0; i < resolutionList.size(); i++) {
+                    try {
+                        resolutions[i] = resolutionList.get(i).height * resolutionList.get(i).width;
+                    } catch (Exception e) {
+                        resolutions[i] = 0;
+                    }
+                }
+                if (video == -1) {
+                    return getMinIndex(resolutions);
+                } else {
+                    return getMaxIndex(resolutions);
+                }
+            } else {
+                if (resolutionList.size() >= video) {
+                    return video - 1;
+                } else {
+                    System.out.println("[Warning] Illegal video track number. Please choose manually.\n");
+                }
+            }
+        }
         String chosen;
         int chosenNum;
         while (true) {
@@ -90,7 +125,30 @@ public class Main {
         return chosenNum;
     }
 
-    private int chooseAudio(Representation[] audioRepresentations) {
+    private int chooseAudio(Representation[] audioRepresentations, int audio) {
+        if (audio != 0) {
+            if (audio < 0) {
+                int[] bandwiths = new int[audioRepresentations.length];
+                for (int i = 0; i < audioRepresentations.length; i++) {
+                    try {
+                        bandwiths[i] = Integer.parseInt(audioRepresentations[i].getBandwidth());
+                    } catch (Exception e) {
+                        bandwiths[i] = 0;
+                    }
+                }
+                if (audio == -1) {
+                    return getMinIndex(bandwiths);
+                } else {
+                    return getMaxIndex(bandwiths);
+                }
+            } else {
+                if (audioRepresentations.length >= audio) {
+                    return audio - 1;
+                } else {
+                    System.out.println("[Warning] Illegal audio track number. Please choose manually.\n");
+                }
+            }
+        }
         while (true) {
             System.out.println("Please choose audio tracks:");
             for (int i = 0; i < audioRepresentations.length; i++) {
@@ -118,7 +176,30 @@ public class Main {
         }
     }
 
-    private int chooseVideo(Representation[] videoRepresentations) {
+    private int chooseVideo(Representation[] videoRepresentations, int video) {
+        if (video != 0) {
+            if (video < 0) {
+                int[] bandwiths = new int[videoRepresentations.length];
+                for (int i = 0; i < videoRepresentations.length; i++) {
+                    try {
+                        bandwiths[i] = Integer.parseInt(videoRepresentations[i].getBandwidth());
+                    } catch (Exception e) {
+                        bandwiths[i] = 0;
+                    }
+                }
+                if (video == -1) {
+                    return getMinIndex(bandwiths);
+                } else {
+                    return getMaxIndex(bandwiths);
+                }
+            } else {
+                if (videoRepresentations.length >= video) {
+                    return video - 1;
+                } else {
+                    System.out.println("[Warning] Illegal video track number. Please choose manually.\n");
+                }
+            }
+        }
         while (true) {
             System.out.println("Please choose video resolution:");
             for (int i = 0; i < videoRepresentations.length; i++) {
@@ -140,6 +221,30 @@ public class Main {
                 System.out.println("Illegal input. Please choose again.\n");
             }
         }
+    }
+
+    private int getMinIndex(int num[]) {
+        int minNum = num[0];
+        int minIndex = 0;
+        for (int i = 1; i < num.length; i++) {
+            if (num[i] < minNum) {
+                minNum = num[i];
+                minIndex = i;
+            }
+        }
+        return minIndex;
+    }
+
+    private int getMaxIndex(int num[]) {
+        int maxNum = num[num.length - 1];
+        int maxIndex = num.length - 1;
+        for (int i = num.length - 2; i >= 0; i++) {
+            if (num[i] > maxNum) {
+                maxNum = num[i];
+                maxIndex = i;
+            }
+        }
+        return maxIndex;
     }
 
     public static void main(String[] args) {
