@@ -141,12 +141,36 @@ public class DASHPlaylistManager {
 
     public int getAudioSegNumber() {
         Element segTemplate = (Element) audioAdaptationSet.getElementsByTagName("SegmentTemplate").item(0);
-        return (int) Math.ceil(mediaPresentationDuration / (Double.parseDouble(segTemplate.getAttribute("duration")) / Double.parseDouble(segTemplate.getAttribute("timescale"))));
+        if (segTemplate.hasAttribute("duration")) {
+            return (int) Math.ceil(mediaPresentationDuration / (Double.parseDouble(segTemplate.getAttribute("duration")) / Double.parseDouble(segTemplate.getAttribute("timescale"))));
+        } else {
+            Element segTimeline = (Element) audioAdaptationSet.getElementsByTagName("SegmentTimeline").item(0);
+            int segNum = 0;
+            for (int i = 0; i < segTimeline.getElementsByTagName("S").getLength(); i++) {
+                if (((Element) segTimeline.getElementsByTagName("S").item(i)).hasAttribute("r")) {
+                    segNum += Integer.parseInt(((Element) segTimeline.getElementsByTagName("S").item(i)).getAttribute("r"));
+                }
+                segNum++;
+            }
+            return segNum;
+        }
     }
 
     public int getVideoSegNumber() {
-        Element segTemplate = (Element) audioAdaptationSet.getElementsByTagName("SegmentTemplate").item(0);
-        return (int) Math.ceil(mediaPresentationDuration / (Double.parseDouble(segTemplate.getAttribute("duration")) / Double.parseDouble(segTemplate.getAttribute("timescale"))));
+        Element segTemplate = (Element) videoAdaptationSet.getElementsByTagName("SegmentTemplate").item(0);
+        if (segTemplate.hasAttribute("duration")) {
+            return (int) Math.ceil(mediaPresentationDuration / (Double.parseDouble(segTemplate.getAttribute("duration")) / Double.parseDouble(segTemplate.getAttribute("timescale"))));
+        } else {
+            Element segTimeline = (Element) videoAdaptationSet.getElementsByTagName("SegmentTimeline").item(0);
+            int segNum = 0;
+            for (int i = 0; i < segTimeline.getElementsByTagName("S").getLength(); i++) {
+                if (((Element) segTimeline.getElementsByTagName("S").item(i)).hasAttribute("r")) {
+                    segNum += Integer.parseInt(((Element) segTimeline.getElementsByTagName("S").item(i)).getAttribute("r"));
+                }
+                segNum++;
+            }
+            return segNum;
+        }
     }
 
     public String getAudioInitializationURI() {

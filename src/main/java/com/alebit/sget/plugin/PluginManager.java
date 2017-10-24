@@ -85,7 +85,6 @@ public class PluginManager {
                                         default:
                                         try {
                                             int resNum = Integer.parseInt(args[i + 1]);
-                                            i++;
                                             if (resNum < 1) {
                                                 System.err.println("Wrong argument after \"" + args[i] + "\": " + args[i + 1]);
                                                 throw new IllegalArgumentException();
@@ -96,6 +95,7 @@ public class PluginManager {
                                             throw new IllegalArgumentException();
                                         }
                                     }
+                                    i++;
                                     break;
                                 case "-a":
                                 case "--audio":
@@ -122,6 +122,7 @@ public class PluginManager {
                                                 throw new IllegalArgumentException();
                                             }
                                     }
+                                    i++;
                                     break;
                                 case "--help":
                                 case "-h":

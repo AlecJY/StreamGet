@@ -238,7 +238,7 @@ public class Main {
     private int getMaxIndex(int num[]) {
         int maxNum = num[num.length - 1];
         int maxIndex = num.length - 1;
-        for (int i = num.length - 2; i >= 0; i++) {
+        for (int i = num.length - 2; i >= 0; i--) {
             if (num[i] > maxNum) {
                 maxNum = num[i];
                 maxIndex = i;
