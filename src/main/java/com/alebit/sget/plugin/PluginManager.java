@@ -86,7 +86,6 @@ public class PluginManager {
                                         try {
                                             int resNum = Integer.parseInt(args[i + 1]);
                                             if (resNum < 1) {
-                                                System.err.println("Wrong argument after \"" + args[i] + "\": " + args[i + 1]);
                                                 throw new IllegalArgumentException();
                                             }
                                             newArgs[3] = Integer.toString(resNum);
@@ -113,7 +112,6 @@ public class PluginManager {
                                                 int resNum = Integer.parseInt(args[i + 1]);
                                                 i++;
                                                 if (resNum < 1) {
-                                                    System.err.println("Wrong argument after \"" + args[i] + "\": " + args[i + 1]);
                                                     throw new IllegalArgumentException();
                                                 }
                                                 newArgs[4] = Integer.toString(resNum);
@@ -151,16 +149,16 @@ public class PluginManager {
             } catch (Exception e) {
                 System.out.println("Usage: StreamGet [OPTIONS] [-o|--output] FILENAME URL");
                 System.out.println(" FILENAME\tThe output video name");
-                System.out.println(" URL     \tMedia Stream playlist URL (no effect to MPEG-DASH)");
+                System.out.println(" URL     \tMedia Stream playlist URL");
                 System.out.println();
                 System.out.println("Option: ");
                 System.out.println(" -h\t--help\tPrint this help text");
-                System.out.println(" -r\t--raw\tNot delete raw video stream");
-                System.out.println("-v\t--video\t[l | lowest | h | highest | NUMBER]\tSelect video representation");
+                System.out.println(" -r\t--raw\tNot delete raw video stream (no effect to MPEG-DASH)");
+                System.out.println(" -v\t--video\t[l | lowest | h | highest | NUMBER]\tSelect video track");
                 System.out.println("\t\t\t[l | lowest] Select lowest resolution video");
                 System.out.println("\t\t\t[h | highest] Select highest resolution video");
                 System.out.println("\t\t\t[NUMBER] Select video number (Start from 1)");
-                System.out.println("-a\t--audio\t[l | lowest | h | highest | NUMBER]\tSelect audio representation");
+                System.out.println(" -a\t--audio\t[l | lowest | h | highest | NUMBER]\tSelect audio track (no effect to HLS)");
                 System.out.println("\t\t\t[l | lowest] Select lowest quality audio");
                 System.out.println("\t\t\t[h | highest] Select highest quality audio");
                 System.out.println("\t\t\t[NUMBER] Select audio number (Start from 1)");
