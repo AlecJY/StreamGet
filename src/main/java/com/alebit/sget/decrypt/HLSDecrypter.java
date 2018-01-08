@@ -59,7 +59,7 @@ public class HLSDecrypter {
                 FileUtils.deleteDirectory(playlistPath.getParent().toFile());
             }
         } catch (Exception e) {
-            System.err.println("Delete " + playlistPath.getParent() + "failed");
+            System.err.println("Delete " + playlistPath.getParent() + " failed");
             e.printStackTrace();
             System.exit(-1);
         }

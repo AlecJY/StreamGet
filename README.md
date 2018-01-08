@@ -4,20 +4,20 @@ Resumable HLS and MPEG-DASH Downloader
 ## Usage
 ```
 Usage: StreamGet [OPTIONS] [-o|--output] FILENAME URL
- FILENAME	The output video name
- URL     	Media Stream playlist URL
+ FILENAME   The output video name
+ URL        Media Stream playlist URL
 
 Option:
- -h	--help	Print this help text
- -r	--raw	Not delete raw video stream (no effect to MPEG-DASH)
- -v	--video	[l | lowest | h | highest | NUMBER]	Select video track
-			[l | lowest] Select lowest resolution video
-			[h | highest] Select highest resolution video
-			[NUMBER] Select video number (Start from 1)
- -a	--audio	[l | lowest | h | highest | NUMBER]	Select audio track (no effect to HLS)
-			[l | lowest] Select lowest quality audio
-			[h | highest] Select highest quality audio
-			[NUMBER] Select audio number (Start from 1)
+ -h --help  Print this help text
+ -r --raw   Not delete raw video stream (no effect to MPEG-DASH)
+ -v --video [l | lowest | h | highest | NUMBER] Select video track
+            [l | lowest]    Select lowest resolution video
+            [h | highest]   Select highest resolution video
+            [NUMBER]        Select video number (Start from 1)
+ -a --audio [l | lowest | h | highest | NUMBER] Select audio track (no effect to HLS)
+            [l | lowest]    Select lowest quality audio
+            [h | highest]   Select highest quality audio
+            [NUMBER]        Select audio number (Start from 1)
 ```
 
 ## Output Video Format

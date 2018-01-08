@@ -155,13 +155,13 @@ public class PluginManager {
                 System.out.println(" -h\t--help\tPrint this help text");
                 System.out.println(" -r\t--raw\tNot delete raw video stream (no effect to MPEG-DASH)");
                 System.out.println(" -v\t--video\t[l | lowest | h | highest | NUMBER]\tSelect video track");
-                System.out.println("\t\t\t[l | lowest] Select lowest resolution video");
-                System.out.println("\t\t\t[h | highest] Select highest resolution video");
-                System.out.println("\t\t\t[NUMBER] Select video number (Start from 1)");
+                System.out.println("\t\t\t[l | lowest]\tSelect lowest resolution video");
+                System.out.println("\t\t\t[h | highest]\tSelect highest resolution video");
+                System.out.println("\t\t\t[NUMBER]\t\tSelect video number (Start from 1)");
                 System.out.println(" -a\t--audio\t[l | lowest | h | highest | NUMBER]\tSelect audio track (no effect to HLS)");
-                System.out.println("\t\t\t[l | lowest] Select lowest quality audio");
-                System.out.println("\t\t\t[h | highest] Select highest quality audio");
-                System.out.println("\t\t\t[NUMBER] Select audio number (Start from 1)");
+                System.out.println("\t\t\t[l | lowest]\tSelect lowest quality audio");
+                System.out.println("\t\t\t[h | highest]\tSelect highest quality audio");
+                System.out.println("\t\t\t[NUMBER]\t\tSelect audio number (Start from 1)");
                 System.exit(0);
             }
             args = newArgs;
