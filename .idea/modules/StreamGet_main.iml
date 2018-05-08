@@ -9,8 +9,11 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="Gradle: com.iheartradio.m3u8:open-m3u8:0.2.4" level="project" />
+    <orderEntry type="library" name="Gradle: com.iheartradio.m3u8:open-m3u8:0.2.6" level="project" />
     <orderEntry type="library" name="Gradle: com.googlecode.json-simple:json-simple:1.1" level="project" />
     <orderEntry type="library" name="Gradle: commons-io:commons-io:2.4" level="project" />
+    <orderEntry type="library" name="Gradle: org.jcodec:jcodec-javase:0.2.3" level="project" />
+    <orderEntry type="library" name="Gradle: org.jcodec:jcodec:0.2.3" level="project" />
+    <orderEntry type="library" name="Gradle: com.google.code.findbugs:jsr305:3.0.2" level="project" />
   </component>
 </module>

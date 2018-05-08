@@ -69,7 +69,7 @@ public class DecryptManager {
         try {
             data = cipher.doFinal(data);
         } catch (Exception e) {
-            System.err.println("Decrypt failed");
+            System.err.println("Decrypt failed in file: " + file.getPath());
             e.printStackTrace();
             System.exit(-1);
         }
