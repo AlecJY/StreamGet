@@ -211,14 +211,20 @@ public class StreamDownloader {
             }
             if (trackData.hasEncryptionData()) {
                 EncryptionData encryptionData = trackData.getEncryptionData();
-                String[] filenameArr = encryptionData.getUri().split("/");
-                encryptionData = encryptionData.buildUpon().withUri(filenameArr[filenameArr.length-1]).build();
+                String filename;
+                if (encryptionData.getUri().contains("?")) {
+                    filename = encryptionData.getUri().substring(encryptionData.getUri().lastIndexOf("/") + 1, encryptionData.getUri().lastIndexOf("?"));
+                } else {
+                    filename = encryptionData.getUri().substring(encryptionData.getUri().lastIndexOf("/") + 1, encryptionData.getUri().length());
+                }
+                encryptionData = encryptionData.buildUpon().withUri(filename).build();
                 trackData = trackData.buildUpon().withUri(uri).withEncryptionData(encryptionData).build();
             } else {
                 trackData = trackData.buildUpon().withUri(uri).build();
             }
             modifiedTracks.add(trackData);
         }
+
         mediaPlaylist = mediaPlaylist.buildUpon().withTracks(modifiedTracks).build();
         return mediaPlaylist;
     }
@@ -235,7 +241,7 @@ public class StreamDownloader {
                 }
             }
             if (!status) {
-                System.out.println("Downloading encrypt key...");
+                System.out.println("Downloading key...");
                 if (tracks.get(0).getEncryptionData().getUri().contains("://")) {
                     downs = downloadManager.download(tracks.get(0).getEncryptionData().getUri(), partPath.toString() + File.separator);
                 } else {

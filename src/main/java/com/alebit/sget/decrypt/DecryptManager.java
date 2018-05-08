@@ -39,7 +39,7 @@ public class DecryptManager {
             fileInputStream.read(keyData);
             fileInputStream.close();
         } catch (Exception e) {
-            System.err.println("Cannot get encrypt key.");
+            System.err.println("Cannot get key.");
             System.exit(-1);
         }
         Key key = new SecretKeySpec(keyData, "AES");
