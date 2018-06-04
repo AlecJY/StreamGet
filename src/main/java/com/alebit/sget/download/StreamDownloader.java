@@ -256,7 +256,12 @@ public class StreamDownloader {
         }
         for (int i = index + 1; i < tracks.size(); i++) {
             System.out.println("Downloading video: " + Math.round(((float)i / (float)tracks.size())*100) + "% (" + (i+1) + "/" + tracks.size() + ")");
-            boolean downStatus = downloadManager.download(playlistManager.getPreURL() + tracks.get(i).getUri(), partPath.toString() + File.separator);
+            boolean downStatus;
+            if (tracks.get(i).getUri().contains("://")) {
+                downStatus = downloadManager.download(tracks.get(i).getUri(), partPath.toString() + File.separator);
+            } else {
+                downStatus = downloadManager.download(playlistManager.getPreURL() + tracks.get(i).getUri(), partPath.toString() + File.separator);
+            }
             if (!downStatus) {
                 System.err.println("Download Failed. Please try again later.");
                 System.exit(-1);

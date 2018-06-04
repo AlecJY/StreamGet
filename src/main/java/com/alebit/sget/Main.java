@@ -65,7 +65,11 @@ public class Main {
                     if (playlistManager.getPlaylistResolution() != null && playlistManager.getPlaylistResolution().size() > 1) {
                         index = chooseResolution(playlistManager.getPlaylistResolution(), video);
                     }
-                    url = playlistManager.getPreURL().concat(playlistManager.getPlaylistData(index).getUri());
+                    if (playlistManager.getPlaylistData(index).getUri().contains("://")) {
+                        url = playlistManager.getPlaylistData(index).getUri();
+                    } else {
+                        url = playlistManager.getPreURL().concat(playlistManager.getPlaylistData(index).getUri());
+                    }
                     playlistManager = new PlaylistManager(url);
                 } else {
                     break;
