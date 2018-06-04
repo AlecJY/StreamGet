@@ -207,7 +207,9 @@ public class StreamDownloader {
             String uri = trackData.getUri();
             int dotSite = uri.lastIndexOf("?");
             if (dotSite > 0) {
-                uri = uri.substring(0, dotSite);
+                uri = uri.substring(uri.lastIndexOf("/") + 1, dotSite);
+            } else {
+                uri = uri.substring(uri.lastIndexOf("/") + 1, uri.length());
             }
             if (trackData.hasEncryptionData()) {
                 EncryptionData encryptionData = trackData.getEncryptionData();
