@@ -241,14 +241,6 @@ public class StreamDownloader {
         DownloadManager downloadManager = new DownloadManager();
         boolean downStatus;
         for (Subtitle subtitle: subtitles) {
-            String uri;
-            if (subtitle.getUri().contains("?")) {
-                uri = subtitle.getUri().substring(0, subtitle.getUri().indexOf("?"));
-            } else {
-                uri = subtitle.getUri();
-            }
-            String ext = uri.substring(uri.lastIndexOf("."));
-            System.out.println("Downloading subtitle \"" + filename + "." + subtitle.getName() + ext + "\"");
             PlaylistManager subtitlePlaylist = new PlaylistManager(subtitle.getUri());
             if (!subtitlePlaylist.hasMediaPlaylist()) {
                 System.err.println("Unsupported subtitle format");
@@ -258,6 +250,14 @@ public class StreamDownloader {
                 System.err.println("Unsupported subtitle format");
                 System.exit(-1);
             }
+            String uri;
+            if (subtitlePlaylist.getTracks().get(0).getUri().contains("?")) {
+                uri = subtitlePlaylist.getTracks().get(0).getUri().substring(0, subtitle.getUri().indexOf("?"));
+            } else {
+                uri = subtitlePlaylist.getTracks().get(0).getUri();
+            }
+            String ext = uri.substring(uri.lastIndexOf("."));
+            System.out.println("Downloading subtitle \"" + filename + "." + subtitle.getName() + ext + "\"");
             downStatus = downloadManager.download(subtitlePlaylist.getPreURL() + subtitlePlaylist.getTracks().get(0).getUri(), path.getParent().toString() + File.separator, filename + "." + subtitle.getName() + ext);
             if (!downStatus) {
                 System.err.println("Download Failed. Please try again later.");
