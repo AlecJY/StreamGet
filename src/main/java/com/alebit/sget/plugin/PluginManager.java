@@ -37,7 +37,7 @@ public class PluginManager {
             for (File file: files) {
                 try {
                     PluginLoader pluginLoader = new PluginLoader(file.toURI().toURL());
-                    if (pluginLoader.getPluginLoaderVersion().equals("1.1") || pluginLoader.getPluginLoaderVersion().equals("1.2")) {
+                    if (pluginLoader.getPluginLoaderVersion().equals("1.1") || pluginLoader.getPluginLoaderVersion().equals("1.2") || pluginLoader.getPluginLoaderVersion().equals("1.3")) {
                         args = pluginLoader.invokeClass(pluginLoader.getPluginClassName(), args);
                     }
                     break;
@@ -48,10 +48,11 @@ public class PluginManager {
                 }
             }
         } else {
-            String[] newArgs = new String[5];
+            String[] newArgs = new String[6];
             newArgs[2] = "false";
             newArgs[3] = "0";
             newArgs[4] = "0";
+            newArgs[5] = "0";
             try {
                 for (int i = 0; i < args.length; i++) {
                     switch (args[i].charAt(0)) {
@@ -122,6 +123,14 @@ public class PluginManager {
                                     }
                                     i++;
                                     break;
+                                case "--subtitle":
+                                case "-s":
+                                    newArgs[5] = "2";
+                                    break;
+                                case "-e":
+                                case "--no-subtitle":
+                                    newArgs[5] = "1";
+                                    break;
                                 case "--help":
                                 case "-h":
                                     throw new IllegalArgumentException();
@@ -162,6 +171,8 @@ public class PluginManager {
                 System.out.println("\t\t\t[l | lowest]\tSelect lowest quality audio");
                 System.out.println("\t\t\t[h | highest]\tSelect highest quality audio");
                 System.out.println("\t\t\t[NUMBER]\t\tSelect audio number (Start from 1)");
+                System.out.println(" -s\t--subtitle\tDownload subtitles if the video contains (no effect to MPEG-DASH)");
+                System.out.println(" -e\t--no-subtitle\tDon't download subtitles");
                 System.exit(0);
             }
             args = newArgs;

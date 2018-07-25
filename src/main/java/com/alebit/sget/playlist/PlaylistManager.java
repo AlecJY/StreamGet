@@ -138,6 +138,31 @@ public class PlaylistManager {
         }
     }
 
+    public List<Subtitle> getSubtitles() {
+        ArrayList<Subtitle> subtitles = new ArrayList<>();
+        if (hasMasterPlaylist()) {
+            for (MediaData mediaData: masterPlaylist.getMediaData()) {
+                if (mediaData.getGroupId().equals("subs")) {
+                    Subtitle subtitle = new Subtitle(mediaData.getName(), mediaData.getLanguage(), removeDotDot(getPreURL(), mediaData.getUri()));
+                    subtitles.add(subtitle);
+                }
+            }
+        }
+        return subtitles;
+    }
+
+    private String removeDotDot(String pUrl, String uri) {
+        try {
+            while (uri.startsWith("../")) {
+                pUrl = pUrl.substring(0, pUrl.substring(0, pUrl.length() - 1).lastIndexOf("/") + 1);
+                uri = uri.substring(uri.indexOf("/") + 1);
+            }
+        } catch (Exception e) {
+            System.err.println("Invalid URL: " + pUrl + uri);
+        }
+        return pUrl + uri;
+    }
+
     public List<TrackData> getTracks() {
         return mediaPlaylist.getTracks();
     }

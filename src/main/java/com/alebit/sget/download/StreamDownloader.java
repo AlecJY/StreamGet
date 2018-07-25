@@ -3,6 +3,7 @@ package com.alebit.sget.download;
 import com.alebit.sget.decrypt.HLSDecrypter;
 import com.alebit.sget.playlist.DASH.DASHPlaylistManager;
 import com.alebit.sget.playlist.PlaylistManager;
+import com.alebit.sget.playlist.Subtitle;
 import com.iheartradio.m3u8.Encoding;
 import com.iheartradio.m3u8.Format;
 import com.iheartradio.m3u8.PlaylistWriter;
@@ -32,6 +33,7 @@ public class StreamDownloader {
     private PlaylistManager playlistManager;
     private DASHPlaylistManager dashPlaylistManager;
     private List<TrackData> tracks;
+    private List<Subtitle> subtitles;
     private Path path;
     private Path partPath;
     private Path jsonPath;
@@ -40,7 +42,7 @@ public class StreamDownloader {
     private int progress = -1;
     private boolean raw;
 
-    public StreamDownloader(PlaylistManager playlistManager, Path path, boolean raw) {
+    public StreamDownloader(PlaylistManager playlistManager, List<Subtitle> subtitles, Path path, boolean raw) {
         if (path.getParent() == null) {
             path = Paths.get("." + File.separator + path.toString());
         }
@@ -52,6 +54,7 @@ public class StreamDownloader {
         if (!playlistManager.isDASH()) {
             tracks = playlistManager.getTracks();
         }
+        this.subtitles = subtitles;
         this.path = path;
         int dotSite = path.getFileName().toString().lastIndexOf(".");
         if (dotSite > 0) {
@@ -150,6 +153,9 @@ public class StreamDownloader {
             }
             BufferedWriter jsonWriter = new BufferedWriter(new FileWriter(jsonPath.toFile(), true));
             jsonWriter.close();
+            if (subtitles != null) {
+                downloadSubtitles();
+            }
             if (playlistManager.isDASH()) {
                 downloadDASH(progress);
                 jsonPath.toFile().delete();
@@ -172,7 +178,7 @@ public class StreamDownloader {
             return (JSONObject) parser.parse(new FileReader(jsonPath.toFile()));
         } catch (FileNotFoundException e) {
         } catch (ParseException e) {
-            System.out.println("status.json is broken. Create new file.");
+            System.out.println("\nstatus.json is broken. Create new file.");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -229,6 +235,35 @@ public class StreamDownloader {
 
         mediaPlaylist = mediaPlaylist.buildUpon().withTracks(modifiedTracks).build();
         return mediaPlaylist;
+    }
+
+    private void downloadSubtitles() {
+        DownloadManager downloadManager = new DownloadManager();
+        boolean downStatus;
+        for (Subtitle subtitle: subtitles) {
+            String uri;
+            if (subtitle.getUri().contains("?")) {
+                uri = subtitle.getUri().substring(0, subtitle.getUri().indexOf("?"));
+            } else {
+                uri = subtitle.getUri();
+            }
+            String ext = uri.substring(uri.lastIndexOf("."));
+            System.out.println("Downloading subtitle \"" + filename + "." + subtitle.getName() + ext + "\"");
+            PlaylistManager subtitlePlaylist = new PlaylistManager(subtitle.getUri());
+            if (!subtitlePlaylist.hasMediaPlaylist()) {
+                System.err.println("Unsupported subtitle format");
+                System.exit(-1);
+            }
+            if (subtitlePlaylist.getTracks().size() != 1) {
+                System.err.println("Unsupported subtitle format");
+                System.exit(-1);
+            }
+            downStatus = downloadManager.download(subtitlePlaylist.getPreURL() + subtitlePlaylist.getTracks().get(0).getUri(), path.getParent().toString() + File.separator, filename + "." + subtitle.getName() + ext);
+            if (!downStatus) {
+                System.err.println("Download Failed. Please try again later.");
+                System.exit(-1);
+            }
+        }
     }
 
     private void downloadHLS(int index) {

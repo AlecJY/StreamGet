@@ -4,6 +4,7 @@ import com.alebit.sget.playlist.DASH.DASHPlaylistManager;
 import com.alebit.sget.playlist.DASH.Representation;
 import com.alebit.sget.playlist.PlaylistManager;
 import com.alebit.sget.download.StreamDownloader;
+import com.alebit.sget.playlist.Subtitle;
 import com.alebit.sget.plugin.PluginManager;
 import com.iheartradio.m3u8.data.Resolution;
 
@@ -23,28 +24,40 @@ public class Main {
         PluginManager pluginManager = new PluginManager(args);
         args = pluginManager.getArgs();
         if (args.length == 2) {
-            String[] formatArgs = new String[5];
+            String[] formatArgs = new String[6];
             formatArgs[0] = args[0];
             formatArgs[1] = args[1];
             formatArgs[2] = "false";
             formatArgs[3] = "0";
             formatArgs[4] = "0";
+            formatArgs[5] = "0";
             args = formatArgs;
         } else if (args.length == 3) {
-            String[] formatArgs = new String[5];
+            String[] formatArgs = new String[6];
             formatArgs[0] = args[0];
             formatArgs[1] = args[1];
             formatArgs[2] = args[2];
             formatArgs[3] = "0";
             formatArgs[4] = "0";
+            formatArgs[5] = "0";
             args = formatArgs;
-        } else if (args.length != 5) {
+        } else if (args.length == 5) {
+            String[] formatArgs = new String[6];
+            formatArgs[0] = args[0];
+            formatArgs[1] = args[1];
+            formatArgs[2] = args[2];
+            formatArgs[3] = args[3];
+            formatArgs[4] = args[4];
+            formatArgs[5] = "0";
+        } else if (args.length != 6) {
             System.err.println("Wrong arguments");
             System.exit(-1);
         }
         String url = args[0];
         int video = Integer.parseInt(args[3]);
         int audio = Integer.parseInt(args[4]);
+        int subtitle = Integer.parseInt(args[5]);
+        List<Subtitle> subtitleList = null;
         PlaylistManager playlistManager = new PlaylistManager(url);
         if (playlistManager.isDASH()) {
             DASHPlaylistManager dashPlaylistManager = playlistManager.getDASHPlaylist();
@@ -70,6 +83,15 @@ public class Main {
                     } else {
                         url = playlistManager.getPreURL().concat(playlistManager.getPlaylistData(index).getUri());
                     }
+                    if (playlistManager.getSubtitles().size() > 0) {
+                        if (subtitle == 0) {
+                            if (wantSubtitles()) {
+                                subtitleList = playlistManager.getSubtitles();
+                            }
+                        } else if (subtitle == 2) {
+                            subtitleList = playlistManager.getSubtitles();
+                        }
+                    }
                     playlistManager = new PlaylistManager(url);
                 } else {
                     break;
@@ -78,7 +100,7 @@ public class Main {
         }
         Path path = Paths.get(args[1]);
         boolean raw = Boolean.parseBoolean(args[2]);
-        StreamDownloader downloader = new StreamDownloader(playlistManager, path, raw);
+        StreamDownloader downloader = new StreamDownloader(playlistManager, subtitleList, path, raw);
     }
 
     private int chooseResolution(List<Resolution> resolutionList, int video) {
@@ -127,6 +149,28 @@ public class Main {
             }
         }
         return chosenNum;
+    }
+
+    private boolean wantSubtitles() {
+        String chosen;
+        while (true) {
+            System.out.println("\nThis video contains subtitles, do you want to download? (Y/N)");
+            System.out.print("=> ");
+            chosen = scanner.next().toLowerCase();
+            switch (chosen) {
+                case "y":
+                case "yes":
+                    return true;
+
+                case "n":
+                case "no":
+                    return false;
+
+                default:
+                    System.out.println("Illegal input. Please choose again.\n");
+
+            }
+        }
     }
 
     private int chooseAudio(Representation[] audioRepresentations, int audio) {

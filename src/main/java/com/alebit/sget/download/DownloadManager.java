@@ -10,14 +10,18 @@ import java.net.URL;
  */
 public class DownloadManager {
     public boolean download(String url, String filePath) {
+        String[] urlArr = url.split("/");
+        String filename = urlArr[urlArr.length - 1];
+        int dotSite = filename.lastIndexOf("?");
+        if (dotSite > 0) {
+            filename = filename.substring(0, dotSite);
+        }
+        return download(url, filePath, filename);
+    }
+
+    public boolean download(String url, String filePath, String filename) {
         try {
             URL loc = new URL(url);
-            String[] urlArr = url.split("/");
-            String filename = urlArr[urlArr.length - 1];
-            int dotSite = filename.lastIndexOf("?");
-            if (dotSite > 0) {
-                filename = filename.substring(0, dotSite);
-            }
             File file = new File(filePath + filename);
             FileUtils.copyURLToFile(loc, file, 60000, 60000);
             return true;

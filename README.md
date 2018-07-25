@@ -18,6 +18,8 @@ Option:
             [l | lowest]    Select lowest quality audio
             [h | highest]   Select highest quality audio
             [NUMBER]        Select audio number (Start from 1)
+ -s	--subtitle	Download subtitles if the video contains (no effect to MPEG-DASH)
+ -e	--no-subtitle	Don't download subtitles
 ```
 
 ## Output Video Format
@@ -38,6 +40,7 @@ You can use plugins to help you fetch playlist url more easily.
 | 1.0            | 1.0                       |
 | 1.1            | 1.1 and later             |
 | 1.2            | 2.1 and later             |
+| 1.3            | 2.2 and later             |
 
 ### Use plugins
 Add a folder called "plugins", then put a StreamGet jar plugin into folder
