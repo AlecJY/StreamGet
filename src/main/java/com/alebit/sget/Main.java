@@ -49,6 +49,7 @@ public class Main {
             formatArgs[3] = args[3];
             formatArgs[4] = args[4];
             formatArgs[5] = "0";
+            args = formatArgs;
         } else if (args.length != 6) {
             System.err.println("Wrong arguments");
             System.exit(-1);
