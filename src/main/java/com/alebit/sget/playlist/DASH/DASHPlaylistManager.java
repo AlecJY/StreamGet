@@ -51,7 +51,9 @@ public class DASHPlaylistManager {
                     throw new DASHPlaylistParseException();
                 }
                 if (((Element) representationList.item(0)).getAttribute("width").equals("")) {
-                    audioAdaptationSet = (Element) adaptationList.item(i);
+                    if (!((Element) representationList.item(0)).getAttribute("audioSamplingRate").equals("")) {
+                        audioAdaptationSet = (Element) adaptationList.item(i);
+                    }
                 } else {
                     videoAdaptationSet = (Element) adaptationList.item(i);
                 }
@@ -176,14 +178,14 @@ public class DASHPlaylistManager {
     public String getAudioInitializationURI() {
         Element segTemplate = (Element) audioAdaptationSet.getElementsByTagName("SegmentTemplate").item(0);
         String id = ((Element) audioAdaptationSet.getElementsByTagName("Representation").item(0)).getAttribute("id");
-        String uri = segTemplate.getAttribute("initialization").replaceAll("\\$RepresentationID\\$", uriPrefix + "/" + id);
+        String uri = uriPrefix + "/" + segTemplate.getAttribute("initialization").replaceAll("\\$RepresentationID\\$", id);
         return uri;
     }
 
     public String getVideoInitializationURI() {
         Element segTemplate = (Element) videoAdaptationSet.getElementsByTagName("SegmentTemplate").item(0);
         String id = ((Element) videoAdaptationSet.getElementsByTagName("Representation").item(0)).getAttribute("id");
-        String uri = segTemplate.getAttribute("initialization").replaceAll("\\$RepresentationID\\$", uriPrefix + "/" + id);
+        String uri = uriPrefix + "/" + segTemplate.getAttribute("initialization").replaceAll("\\$RepresentationID\\$", id);
         return uri;
     }
 
@@ -191,7 +193,7 @@ public class DASHPlaylistManager {
         Element segTemplate = (Element) audioAdaptationSet.getElementsByTagName("SegmentTemplate").item(0);
         String id = ((Element) audioAdaptationSet.getElementsByTagName("Representation").item(0)).getAttribute("id");
         int startNum = Integer.parseInt(segTemplate.getAttribute("startNumber"));
-        String uri = segTemplate.getAttribute("media").replaceAll("\\$RepresentationID\\$", uriPrefix + "/" + id).replaceAll("\\$Number\\$", Integer.toString(index + startNum));
+        String uri = uriPrefix + "/" + segTemplate.getAttribute("media").replaceAll("\\$RepresentationID\\$", id).replaceAll("\\$Number\\$", Integer.toString(index + startNum));
         return uri;
     }
 
@@ -199,7 +201,7 @@ public class DASHPlaylistManager {
         Element segTemplate = (Element) videoAdaptationSet.getElementsByTagName("SegmentTemplate").item(0);
         String id = ((Element) videoAdaptationSet.getElementsByTagName("Representation").item(0)).getAttribute("id");
         int startNum = Integer.parseInt(segTemplate.getAttribute("startNumber"));
-        String uri = segTemplate.getAttribute("media").replaceAll("\\$RepresentationID\\$", uriPrefix + "/" + id).replaceAll("\\$Number\\$", Integer.toString(index + startNum));
+        String uri = uriPrefix + "/" + segTemplate.getAttribute("media").replaceAll("\\$RepresentationID\\$", id).replaceAll("\\$Number\\$", Integer.toString(index + startNum));
         return uri;
     }
 
