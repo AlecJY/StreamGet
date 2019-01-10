@@ -10,6 +10,7 @@
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
+            <option value="$PROJECT_DIR$/libs/open-m3u8" />
           </set>
         </option>
       </GradleProjectSettings>

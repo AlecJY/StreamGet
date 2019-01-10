@@ -21,10 +21,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 
 /**
  * Created by Alec on 2016/6/26.
@@ -32,6 +29,7 @@ import java.util.Scanner;
 public class StreamDownloader {
     private PlaylistManager playlistManager;
     private DASHPlaylistManager dashPlaylistManager;
+    private ArrayList<String[]> headers;
     private List<TrackData> tracks;
     private List<Subtitle> subtitles;
     private Path path;
@@ -42,7 +40,7 @@ public class StreamDownloader {
     private int progress = -1;
     private boolean raw;
 
-    public StreamDownloader(PlaylistManager playlistManager, List<Subtitle> subtitles, Path path, boolean raw) {
+    public StreamDownloader(PlaylistManager playlistManager, List<Subtitle> subtitles, ArrayList<String[]> headers, Path path, boolean raw) {
         if (path.getParent() == null) {
             path = Paths.get("." + File.separator + path.toString());
         }
@@ -55,6 +53,7 @@ public class StreamDownloader {
             tracks = playlistManager.getTracks();
         }
         this.subtitles = subtitles;
+        this.headers = headers;
         this.path = path;
         int dotSite = path.getFileName().toString().lastIndexOf(".");
         if (dotSite > 0) {
@@ -238,10 +237,10 @@ public class StreamDownloader {
     }
 
     private void downloadSubtitles() {
-        DownloadManager downloadManager = new DownloadManager();
+        DownloadManager downloadManager = new DownloadManager(headers);
         boolean downStatus;
         for (Subtitle subtitle: subtitles) {
-            PlaylistManager subtitlePlaylist = new PlaylistManager(subtitle.getUri());
+            PlaylistManager subtitlePlaylist = new PlaylistManager(subtitle.getUri(), headers);
             if (!subtitlePlaylist.hasMediaPlaylist()) {
                 System.err.println("Unsupported subtitle format");
                 System.exit(-1);
@@ -267,7 +266,7 @@ public class StreamDownloader {
     }
 
     private void downloadHLS(int index) {
-        DownloadManager downloadManager = new DownloadManager();
+        DownloadManager downloadManager = new DownloadManager(headers);
         if (tracks.get(0).hasEncryptionData()) {
             boolean status = false;
             boolean downs;
@@ -308,7 +307,7 @@ public class StreamDownloader {
     }
 
     private void downloadDASH(int index) {
-        DownloadManager downloadManager = new DownloadManager();
+        DownloadManager downloadManager = new DownloadManager(headers);
         boolean downStatus = downloadManager.download(dashPlaylistManager.getAudioInitializationURI(), partPath.toString() + File.separator + dashPlaylistManager.audioID() + File.separator);
         if (!downStatus) {
             System.err.println("Download Failed. Please try again later.");

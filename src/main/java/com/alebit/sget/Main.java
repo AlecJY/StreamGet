@@ -7,9 +7,15 @@ import com.alebit.sget.download.StreamDownloader;
 import com.alebit.sget.playlist.Subtitle;
 import com.alebit.sget.plugin.PluginManager;
 import com.iheartradio.m3u8.data.Resolution;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Scanner;
 
@@ -21,45 +27,80 @@ public class Main {
     private Scanner scanner = new Scanner(System.in);
 
     public Main(String[] args) {
+        System.setProperty("sun.net.http.allowRestrictedHeaders", "true");
         PluginManager pluginManager = new PluginManager(args);
         args = pluginManager.getArgs();
         if (args.length == 2) {
-            String[] formatArgs = new String[6];
+            String[] formatArgs = new String[7];
             formatArgs[0] = args[0];
             formatArgs[1] = args[1];
             formatArgs[2] = "false";
             formatArgs[3] = "0";
             formatArgs[4] = "0";
             formatArgs[5] = "0";
+            formatArgs[6] = "[]";
             args = formatArgs;
         } else if (args.length == 3) {
-            String[] formatArgs = new String[6];
+            String[] formatArgs = new String[7];
             formatArgs[0] = args[0];
             formatArgs[1] = args[1];
             formatArgs[2] = args[2];
             formatArgs[3] = "0";
             formatArgs[4] = "0";
             formatArgs[5] = "0";
+            formatArgs[6] = "[]";
             args = formatArgs;
         } else if (args.length == 5) {
-            String[] formatArgs = new String[6];
+            String[] formatArgs = new String[7];
             formatArgs[0] = args[0];
             formatArgs[1] = args[1];
             formatArgs[2] = args[2];
             formatArgs[3] = args[3];
             formatArgs[4] = args[4];
             formatArgs[5] = "0";
+            formatArgs[6] = "[]";
             args = formatArgs;
-        } else if (args.length != 6) {
+        } else if (args.length == 6) {
+            String[] formatArgs = new String[7];
+            formatArgs[0] = args[0];
+            formatArgs[1] = args[1];
+            formatArgs[2] = args[2];
+            formatArgs[3] = args[3];
+            formatArgs[4] = args[4];
+            formatArgs[5] = args[5];
+            formatArgs[6] = "[]";
+            args = formatArgs;
+        } else if (args.length != 7) {
             System.err.println("Wrong arguments");
             System.exit(-1);
         }
         String url = args[0];
         int video = Integer.parseInt(args[3]);
         int audio = Integer.parseInt(args[4]);
+
+        ArrayList<String[]> headers = new ArrayList<>();
+        JSONParser parser = new JSONParser();
+        try {
+            JSONArray headerArray = (JSONArray) parser.parse(args[6]);
+            for (Object headerObj: headerArray) {
+                JSONObject headerJson = (JSONObject) headerObj;
+                if (headerJson.containsKey("name") && headerJson.containsKey("value")) {
+                    String[] header = new String[2];
+                    header[0] = headerJson.get("name").toString();
+                    header[1] = headerJson.get("value").toString();
+                    headers.add(header);
+                } else {
+                    throw new Exception();
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Illegal header format");
+            System.exit(-1);
+        }
+
         int subtitle = Integer.parseInt(args[5]);
         List<Subtitle> subtitleList = null;
-        PlaylistManager playlistManager = new PlaylistManager(url);
+        PlaylistManager playlistManager = new PlaylistManager(url, headers);
         if (playlistManager.isDASH()) {
             DASHPlaylistManager dashPlaylistManager = playlistManager.getDASHPlaylist();
             if (dashPlaylistManager.getAudioRepresentations().length > 1) {
@@ -93,7 +134,7 @@ public class Main {
                             subtitleList = playlistManager.getSubtitles();
                         }
                     }
-                    playlistManager = new PlaylistManager(url);
+                    playlistManager = new PlaylistManager(url, headers);
                 } else {
                     break;
                 }
@@ -101,7 +142,7 @@ public class Main {
         }
         Path path = Paths.get(args[1]);
         boolean raw = Boolean.parseBoolean(args[2]);
-        StreamDownloader downloader = new StreamDownloader(playlistManager, subtitleList, path, raw);
+        StreamDownloader downloader = new StreamDownloader(playlistManager, subtitleList, headers, path, raw);
     }
 
     private int chooseResolution(List<Resolution> resolutionList, int video) {

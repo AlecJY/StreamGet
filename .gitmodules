@@ -1,0 +1,3 @@
+[submodule "libs/open-m3u8"]
+	path = libs/open-m3u8
+	url = https://github.com/AlecJY/open-m3u8.git

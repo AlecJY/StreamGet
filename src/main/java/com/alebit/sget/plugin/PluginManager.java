@@ -48,11 +48,13 @@ public class PluginManager {
                 }
             }
         } else {
-            String[] newArgs = new String[6];
+            String[] newArgs = new String[7];
             newArgs[2] = "false";
             newArgs[3] = "0";
             newArgs[4] = "0";
             newArgs[5] = "0";
+            // TODO: Implement the command line interface for headers
+            newArgs[6] = "[]";
             try {
                 for (int i = 0; i < args.length; i++) {
                     switch (args[i].charAt(0)) {

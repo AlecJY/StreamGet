@@ -9,7 +9,7 @@ import com.iheartradio.m3u8.data.*;
 import org.apache.commons.io.IOUtils;
 
 import java.io.*;
-import java.net.URL;
+import java.net.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,10 +30,14 @@ public class PlaylistManager {
     private boolean playlistType = false; // false: m3u8 true: MPEG-DASH
     private DASHPlaylistManager dashPlaylistManager;
 
-    public PlaylistManager(String url) {
-        playlistURL = url;
+    public PlaylistManager(String url, ArrayList<String[]> headers) {
+        playlistURL = url.replace("https", "http");
         try {
-            inputStream = new URL(playlistURL).openStream();
+            URLConnection connection = new URL(playlistURL).openConnection();
+            for (String[] header: headers) {
+                connection.setRequestProperty(header[0], header[1]);
+            }
+            inputStream = connection.getInputStream();
             outputStream = new ByteArrayOutputStream();
             IOUtils.copy(inputStream, outputStream);
             inputStream = new ByteArrayInputStream(outputStream.toByteArray());

@@ -5,6 +5,9 @@
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/StreamGet.iml" filepath="$PROJECT_DIR$/.idea/modules/StreamGet.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/StreamGet_main.iml" filepath="$PROJECT_DIR$/.idea/modules/StreamGet_main.iml" group="StreamGet" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/StreamGet_test.iml" filepath="$PROJECT_DIR$/.idea/modules/StreamGet_test.iml" group="StreamGet" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/libs/open-m3u8/open-m3u8.iml" filepath="$PROJECT_DIR$/.idea/modules/libs/open-m3u8/open-m3u8.iml" group="open-m3u8" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/libs/open-m3u8/open-m3u8_main.iml" filepath="$PROJECT_DIR$/.idea/modules/libs/open-m3u8/open-m3u8_main.iml" group="open-m3u8" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/libs/open-m3u8/open-m3u8_test.iml" filepath="$PROJECT_DIR$/.idea/modules/libs/open-m3u8/open-m3u8_test.iml" group="open-m3u8" />
     </modules>
   </component>
 </project>
