@@ -43,7 +43,7 @@ You can use plugins to help you fetch playlist url more easily.
 | 1.1            | 1.1 and later             |
 | 1.2            | 2.1 and later             |
 | 1.3            | 2.2 and later             |
-| 1.4            | 2.3 and later             |
+| 1.4            | 2.31 and later            |
 
 ### Use plugins
 Add a folder called "plugins", then put a StreamGet jar plugin into folder

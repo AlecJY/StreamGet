@@ -35,21 +35,29 @@ public class PluginManager {
         if (pluginsDir.exists()) {
             files = FileUtils.listFiles(pluginsDir, new String[]{"jar"}, true);
         }
+        boolean execPlugin = false;
         if (files != null && files.size() > 0) {
             for (File file: files) {
                 try {
                     PluginLoader pluginLoader = new PluginLoader(file.toURI().toURL());
-                    if (pluginLoader.getPluginLoaderVersion().equals("1.1") || pluginLoader.getPluginLoaderVersion().equals("1.2") || pluginLoader.getPluginLoaderVersion().equals("1.3")) {
+                    if (pluginLoader.getPluginLoaderVersion().equals("1.1") || pluginLoader.getPluginLoaderVersion().equals("1.2") || pluginLoader.getPluginLoaderVersion().equals("1.3") || pluginLoader.getPluginLoaderVersion().equals("1.4")) {
                         args = pluginLoader.invokeClass(pluginLoader.getPluginClassName(), args);
+                        execPlugin = true;
+                        break;
+                    } else {
+                        System.err.println("StreamGet's version is too old to run \"" + pluginLoader.getPluginName() + "\"");
                     }
-                    break;
                 } catch (MalformedURLException e) {
                     e.printStackTrace();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
-        } else {
+            if (!execPlugin) {
+                System.out.println("Fall back to run the default command line interface");
+            }
+        }
+        if (!execPlugin) {
             String[] newArgs = new String[7];
             newArgs[2] = "false";
             newArgs[3] = "0";
