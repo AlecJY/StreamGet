@@ -1,6 +1,8 @@
 package com.alebit.sget.plugin;
 
 import org.apache.commons.io.FileUtils;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -53,8 +55,7 @@ public class PluginManager {
             newArgs[3] = "0";
             newArgs[4] = "0";
             newArgs[5] = "0";
-            // TODO: Implement the command line interface for headers
-            newArgs[6] = "[]";
+            JSONArray headers = new JSONArray();
             try {
                 for (int i = 0; i < args.length; i++) {
                     switch (args[i].charAt(0)) {
@@ -133,6 +134,19 @@ public class PluginManager {
                                 case "--no-subtitle":
                                     newArgs[5] = "1";
                                     break;
+                                case "--header":
+                                case "-d":
+                                    String[] splitHeader = args[i + 1].split(":", 2);
+                                    if (splitHeader.length != 2) {
+                                        System.err.println("Wrong argument after \"" + args[i] + "\": " + args[i + 1]);
+                                        throw new IllegalArgumentException();
+                                    }
+                                    JSONObject header = new JSONObject();
+                                    header.put("name", splitHeader[0].trim());
+                                    header.put("value", splitHeader[1].trim());
+                                    headers.add(header);
+                                    i++;
+                                    break;
                                 case "--help":
                                 case "-h":
                                     throw new IllegalArgumentException();
@@ -166,17 +180,20 @@ public class PluginManager {
                 System.out.println(" -h\t--help\tPrint this help text");
                 System.out.println(" -r\t--raw\tNot delete raw video stream (no effect to MPEG-DASH)");
                 System.out.println(" -v\t--video\t[l | lowest | h | highest | NUMBER]\tSelect video track");
-                System.out.println("\t\t\t[l | lowest]\tSelect lowest resolution video");
-                System.out.println("\t\t\t[h | highest]\tSelect highest resolution video");
-                System.out.println("\t\t\t[NUMBER]\t\tSelect video number (Start from 1)");
+                System.out.println("\t\t[l | lowest]\tSelect lowest resolution video");
+                System.out.println("\t\t[h | highest]\tSelect highest resolution video");
+                System.out.println("\t\t[NUMBER]\tSelect video number (Start from 1)");
                 System.out.println(" -a\t--audio\t[l | lowest | h | highest | NUMBER]\tSelect audio track (no effect to HLS)");
-                System.out.println("\t\t\t[l | lowest]\tSelect lowest quality audio");
-                System.out.println("\t\t\t[h | highest]\tSelect highest quality audio");
-                System.out.println("\t\t\t[NUMBER]\t\tSelect audio number (Start from 1)");
+                System.out.println("\t\t[l | lowest]\tSelect lowest quality audio");
+                System.out.println("\t\t[h | highest]\tSelect highest quality audio");
+                System.out.println("\t\t[NUMBER]\tSelect audio number (Start from 1)");
                 System.out.println(" -s\t--subtitle\tDownload subtitles if the video contains (no effect to MPEG-DASH)");
                 System.out.println(" -e\t--no-subtitle\tDon't download subtitles");
+                System.out.println(" -d\t--header\tSend http requests with the custom header\n" +
+                        "\t\t\tYou can set this option more than once for multiple headers");
                 System.exit(0);
             }
+            newArgs[6] = headers.toJSONString();
             args = newArgs;
         }
         this.args = args;
