@@ -31,7 +31,7 @@ public class PlaylistManager {
     private DASHPlaylistManager dashPlaylistManager;
 
     public PlaylistManager(String url, ArrayList<String[]> headers) {
-        playlistURL = url.replace("https", "http");
+        playlistURL = url;
         try {
             URLConnection connection = new URL(playlistURL).openConnection();
             for (String[] header: headers) {
