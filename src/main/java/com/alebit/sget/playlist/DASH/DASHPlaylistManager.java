@@ -73,12 +73,30 @@ public class DASHPlaylistManager {
     private double parseTime(String timeString) {
         double time = 0;
         int begin = timeString.indexOf("PT") +2;
-        int end = timeString.indexOf("H");
+        int end;
+        end = timeString.indexOf("Y");
         if (end != -1) {
-            time += Double.parseDouble(timeString.substring(begin, end)) * 3600;
+            time += Double.parseDouble(timeString.substring(begin, end)) * 365 * 24 * 60 * 60;
             begin = end + 1;
         }
-        end = timeString.indexOf("M");
+        if (timeString.indexOf("M") != timeString.lastIndexOf("M")) {
+            end = timeString.indexOf("M");
+            if (end != -1) {
+                time += Double.parseDouble(timeString.substring(begin, end)) * 30 * 24 * 60 * 60;
+                begin = end + 1;
+            }
+        }
+        end = timeString.indexOf("DT");
+        if (end != -1) {
+            time += Double.parseDouble(timeString.substring(begin, end)) * 24 * 60 * 60;
+            begin = end + 2;
+        }
+        end = timeString.indexOf("H");
+        if (end != -1) {
+            time += Double.parseDouble(timeString.substring(begin, end)) * 60 * 60;
+            begin = end + 1;
+        }
+        end = timeString.lastIndexOf("M");
         if (end != -1) {
             time += Double.parseDouble(timeString.substring(begin, end)) * 60;
             begin = end + 1;
