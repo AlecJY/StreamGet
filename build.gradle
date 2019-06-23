@@ -1,5 +1,5 @@
 group 'com.alebit.sget'
-version '2.32'
+version '2.33'
 
 apply plugin: 'java'
 apply plugin: 'application'

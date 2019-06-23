@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module external.linked.project.id=":open-m3u8:test" external.linked.project.path="$MODULE_DIR$/../../../../libs/open-m3u8" external.root.project.path="$MODULE_DIR$/../../../.." external.system.id="GRADLE" external.system.module.group="com.iheartradio.m3u8" external.system.module.type="sourceSet" external.system.module.version="0.2.7-SNAPSHOT" type="JAVA_MODULE" version="4">
   <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_1_7">
-    <output-test url="file://$MODULE_DIR$/../../../../libs/open-m3u8/build/classes/java/test" />
+    <output-test url="file://$MODULE_DIR$/../../../../libs/open-m3u8/out/test/classes" />
     <exclude-output />
     <content url="file://$MODULE_DIR$/../../../../libs/open-m3u8/src/test">
       <sourceFolder url="file://$MODULE_DIR$/../../../../libs/open-m3u8/src/test/java" isTestSource="true" />
