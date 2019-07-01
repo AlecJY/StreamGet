@@ -212,17 +212,19 @@ public class StreamDownloader {
             String uri = trackData.getUri();
             int dotSite = uri.lastIndexOf("?");
             if (dotSite > 0) {
-                uri = uri.substring(uri.lastIndexOf("/") + 1, dotSite);
+                uri = uri.substring(0, dotSite);
+                uri = uri.substring(uri.lastIndexOf("/") + 1);
             } else {
-                uri = uri.substring(uri.lastIndexOf("/") + 1, uri.length());
+                uri = uri.substring(uri.lastIndexOf("/") + 1);
             }
             if (trackData.hasEncryptionData()) {
                 EncryptionData encryptionData = trackData.getEncryptionData();
                 String filename;
                 if (encryptionData.getUri().contains("?")) {
-                    filename = encryptionData.getUri().substring(encryptionData.getUri().lastIndexOf("/") + 1, encryptionData.getUri().lastIndexOf("?"));
+                    filename = encryptionData.getUri().substring(0, encryptionData.getUri().lastIndexOf("?"));
+                    filename = filename.substring(filename.lastIndexOf("/") + 1);
                 } else {
-                    filename = encryptionData.getUri().substring(encryptionData.getUri().lastIndexOf("/") + 1, encryptionData.getUri().length());
+                    filename = encryptionData.getUri().substring(encryptionData.getUri().lastIndexOf("/") + 1);
                 }
                 encryptionData = encryptionData.buildUpon().withUri(filename).build();
                 trackData = trackData.buildUpon().withUri(uri).withEncryptionData(encryptionData).build();
@@ -249,15 +251,21 @@ public class StreamDownloader {
                 System.err.println("Unsupported subtitle format");
                 System.exit(-1);
             }
-            String uri;
-            if (subtitlePlaylist.getTracks().get(0).getUri().contains("?")) {
-                uri = subtitlePlaylist.getTracks().get(0).getUri().substring(0, subtitle.getUri().indexOf("?"));
-            } else {
-                uri = subtitlePlaylist.getTracks().get(0).getUri();
+            String uri = subtitlePlaylist.getTracks().get(0).getUri();
+            if (uri.contains("?")) {
+                uri = uri.substring(0, uri.indexOf("?"));
             }
-            String ext = uri.substring(uri.lastIndexOf("."));
+            uri = uri.substring(uri.lastIndexOf("/") + 1);
+            String ext = "";
+            if (uri.contains(".")) {
+                ext = uri.substring(uri.lastIndexOf("."));
+            }
             System.out.println("Downloading subtitle \"" + filename + "." + subtitle.getName() + ext + "\"");
-            downStatus = downloadManager.download(subtitlePlaylist.getPreURL() + subtitlePlaylist.getTracks().get(0).getUri(), path.getParent().toString() + File.separator, filename + "." + subtitle.getName() + ext);
+            String subtitleURL = subtitlePlaylist.getTracks().get(0).getUri();
+            if (!subtitleURL.contains("://")) {
+                subtitleURL = subtitlePlaylist.getPreURL() + subtitleURL;
+            }
+            downStatus = downloadManager.download(subtitleURL, path.getParent().toString() + File.separator, filename + "." + subtitle.getName() + ext);
             if (!downStatus) {
                 System.err.println("Download Failed. Please try again later.");
                 System.exit(-1);

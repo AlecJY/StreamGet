@@ -18,12 +18,11 @@ public class DownloadManager {
     }
 
     public boolean download(String url, String filePath) {
-        String[] urlArr = url.split("/");
-        String filename = urlArr[urlArr.length - 1];
-        int dotSite = filename.lastIndexOf("?");
-        if (dotSite > 0) {
-            filename = filename.substring(0, dotSite);
+        String filename = url;
+        if (filename.contains("?")) {
+            filename = filename.substring(0, filename.indexOf("?"));
         }
+        filename = filename.substring(filename.lastIndexOf("/") + 1);
         return download(url, filePath, filename);
     }
 

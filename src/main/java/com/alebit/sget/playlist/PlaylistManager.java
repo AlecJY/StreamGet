@@ -147,7 +147,11 @@ public class PlaylistManager {
         if (hasMasterPlaylist()) {
             for (MediaData mediaData: masterPlaylist.getMediaData()) {
                 if (mediaData.getGroupId().equals("subs")) {
-                    Subtitle subtitle = new Subtitle(mediaData.getName(), mediaData.getLanguage(), removeDotDot(getPreURL(), mediaData.getUri()));
+                    String subtitleURI = mediaData.getUri();
+                    if (!subtitleURI.contains("://")) {
+                        subtitleURI = removeDotDot(getPreURL(), subtitleURI);
+                    }
+                    Subtitle subtitle = new Subtitle(mediaData.getName(), mediaData.getLanguage(), subtitleURI);
                     subtitles.add(subtitle);
                 }
             }
@@ -192,6 +196,9 @@ public class PlaylistManager {
     }
 
     private void setPreURL(String playlistURL) {
+        if (playlistURL.contains("?")) {
+            playlistURL = playlistURL.substring(0, playlistURL.indexOf("?"));
+        }
         int dotSite = playlistURL.lastIndexOf("/");
         if (dotSite > 0) {
             preURL = playlistURL.substring(0, ++dotSite);
