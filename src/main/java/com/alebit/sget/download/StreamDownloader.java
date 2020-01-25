@@ -316,15 +316,19 @@ public class StreamDownloader {
 
     private void downloadDASH(int index) {
         DownloadManager downloadManager = new DownloadManager(headers);
-        boolean downStatus = downloadManager.download(dashPlaylistManager.getAudioInitializationURI(), partPath.toString() + File.separator + dashPlaylistManager.audioID() + File.separator);
-        if (!downStatus) {
-            System.err.println("Download Failed. Please try again later.");
-            System.exit(-1);
+        if (dashPlaylistManager.getAudioInitializationURI() != null) {
+            boolean downStatus = downloadManager.download(dashPlaylistManager.getAudioInitializationURI(), partPath.toString() + File.separator + dashPlaylistManager.audioID() + File.separator);
+            if (!downStatus) {
+                System.err.println("Download Failed. Please try again later.");
+                System.exit(-1);
+            }
         }
-        downStatus = downloadManager.download(dashPlaylistManager.getVideoInitializationURI(), partPath.toString() + File.separator + dashPlaylistManager.videoID() + File.separator);
-        if (!downStatus) {
-            System.err.println("Download Failed. Please try again later.");
-            System.exit(-1);
+        if (dashPlaylistManager.getVideoInitializationURI() != null) {
+            boolean downStatus = downloadManager.download(dashPlaylistManager.getVideoInitializationURI(), partPath.toString() + File.separator + dashPlaylistManager.videoID() + File.separator);
+            if (!downStatus) {
+                System.err.println("Download Failed. Please try again later.");
+                System.exit(-1);
+            }
         }
         int audioSegNum = dashPlaylistManager.getAudioSegNumber();
         int videoSegNum = dashPlaylistManager.getVideoSegNumber();
@@ -332,14 +336,14 @@ public class StreamDownloader {
         for (int i = index + 1; i < segNum; i++) {
             System.out.println("Downloading video: " + Math.round(((float)i / (float)segNum)*100) + "% (" + (i+1) + "/" + segNum + ")");
             if (i < audioSegNum) {
-                downStatus = downloadManager.download(dashPlaylistManager.getAudioSegURI(i), partPath.toString() + File.separator + dashPlaylistManager.audioID() + File.separator);
+                boolean downStatus = downloadManager.download(dashPlaylistManager.getAudioSegURI(i), partPath.toString() + File.separator + dashPlaylistManager.audioID() + File.separator);
                 if (!downStatus) {
                     System.err.println("Download Failed. Please try again later.");
                     System.exit(-1);
                 }
             }
             if (i < videoSegNum) {
-                downStatus = downloadManager.download(dashPlaylistManager.getVideoSegURI(i), partPath.toString() + File.separator + dashPlaylistManager.videoID() + File.separator);
+                boolean downStatus = downloadManager.download(dashPlaylistManager.getVideoSegURI(i), partPath.toString() + File.separator + dashPlaylistManager.videoID() + File.separator);
                 if (!downStatus) {
                     System.err.println("Download Failed. Please try again later.");
                     System.exit(-1);
