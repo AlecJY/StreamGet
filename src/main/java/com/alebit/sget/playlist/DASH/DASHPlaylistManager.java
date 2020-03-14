@@ -29,6 +29,7 @@ public class DASHPlaylistManager {
     private Element audioAdaptationSet;
     private Element videoAdaptationSet;
     private String uriPrefix;
+    private String uriPostfix;
     private Node[] audioRepresentations;
     private Node[] videoRepresentations;
     private Document manifest;
@@ -51,7 +52,9 @@ public class DASHPlaylistManager {
                     throw new DASHPlaylistParseException();
                 }
                 if (((Element) representationList.item(0)).getAttribute("width").equals("")) {
-                    if (!((Element) representationList.item(0)).getAttribute("audioSamplingRate").equals("")) {
+                    if (!((Element) representationList.item(0)).getAttribute("audioSamplingRate").equals("") ||
+                            ((Element) representationList.item(0)).getAttribute("codecs")
+                                    .toLowerCase().contains("mp4a")) {
                         audioAdaptationSet = (Element) adaptationList.item(i);
                     }
                 } else {
@@ -109,6 +112,12 @@ public class DASHPlaylistManager {
     }
 
     public void setURI(String uri) {
+        if (uri.contains("?")) {
+            uriPostfix = uri.substring(uri.indexOf("?"));
+            uri = uri.substring(0, uri.indexOf("?"));
+        } else {
+            uriPostfix = "";
+        }
         uriPrefix = uri.substring(0, uri.lastIndexOf("/"));
     }
 
@@ -279,7 +288,7 @@ public class DASHPlaylistManager {
         if (audioAdaptationSet.getElementsByTagName("SegmentTemplate").getLength() != 0) {
             Element segTemplate = (Element) audioAdaptationSet.getElementsByTagName("SegmentTemplate").item(0);
             String id = ((Element) audioAdaptationSet.getElementsByTagName("Representation").item(0)).getAttribute("id");
-            String uri = uriPrefix + "/" + segTemplate.getAttribute("initialization").replaceAll("\\$RepresentationID\\$", id);
+            String uri = uriPrefix + "/" + segTemplate.getAttribute("initialization").replaceAll("\\$RepresentationID\\$", id) + uriPostfix;
             return uri;
         } else if (audioAdaptationSet.getElementsByTagName("BaseURL").getLength() != 0) {
             return null;
@@ -297,7 +306,7 @@ public class DASHPlaylistManager {
             if (!segTemplate.hasAttribute("initialization")) {
                 return null;
             }
-            String uri = uriPrefix + "/" + segTemplate.getAttribute("initialization").replaceAll("\\$RepresentationID\\$", id);
+            String uri = uriPrefix + "/" + segTemplate.getAttribute("initialization").replaceAll("\\$RepresentationID\\$", id) + uriPostfix;
             return uri;
         } else if (videoAdaptationSet.getElementsByTagName("BaseURL").getLength() != 0) {
             return null;
@@ -318,11 +327,11 @@ public class DASHPlaylistManager {
             }
             String uri = uriPrefix + "/" + segTemplate.getAttribute("media").replaceAll("\\$RepresentationID\\$", id)
                     .replaceAll("\\$Number\\$", Integer.toString(index + startNum))
-                    .replaceAll("\\$Time\\$", Long.toString(getAudioSegTime(index)));
+                    .replaceAll("\\$Time\\$", Long.toString(getAudioSegTime(index))) + uriPostfix;
             return uri;
         } else {
             String baseURL = audioAdaptationSet.getElementsByTagName("BaseURL").item(0).getTextContent();
-            return uriPrefix + "/" + baseURL;
+            return uriPrefix + "/" + baseURL + uriPostfix;
         }
     }
 
@@ -336,11 +345,11 @@ public class DASHPlaylistManager {
             }
             String uri = uriPrefix + "/" + segTemplate.getAttribute("media").replaceAll("\\$RepresentationID\\$", id)
                     .replaceAll("\\$Number\\$", Integer.toString(index + startNum))
-                    .replaceAll("\\$Time\\$", Long.toString(getVideoSegTime(index)));
+                    .replaceAll("\\$Time\\$", Long.toString(getVideoSegTime(index))) + uriPostfix;
             return uri;
         } else {
             String baseURL = videoAdaptationSet.getElementsByTagName("BaseURL").item(0).getTextContent();
-            return uriPrefix + "/" + baseURL;
+            return uriPrefix + "/" + baseURL + uriPostfix;
         }
     }
 
