@@ -288,6 +288,9 @@ public class DASHPlaylistManager {
         if (audioAdaptationSet.getElementsByTagName("SegmentTemplate").getLength() != 0) {
             Element segTemplate = (Element) audioAdaptationSet.getElementsByTagName("SegmentTemplate").item(0);
             String id = ((Element) audioAdaptationSet.getElementsByTagName("Representation").item(0)).getAttribute("id");
+            if (segTemplate.getAttribute("initialization").matches("^[\\w]+://.*")) {
+                return segTemplate.getAttribute("initialization").replaceAll("\\$RepresentationID\\$", id);
+            }
             String uri = uriPrefix + "/" + segTemplate.getAttribute("initialization").replaceAll("\\$RepresentationID\\$", id) + uriPostfix;
             return uri;
         } else if (audioAdaptationSet.getElementsByTagName("BaseURL").getLength() != 0) {
@@ -305,6 +308,9 @@ public class DASHPlaylistManager {
             String id = ((Element) videoAdaptationSet.getElementsByTagName("Representation").item(0)).getAttribute("id");
             if (!segTemplate.hasAttribute("initialization")) {
                 return null;
+            }
+            if (segTemplate.getAttribute("initialization").matches("^[\\w]+://.*")) {
+                return segTemplate.getAttribute("initialization").replaceAll("\\$RepresentationID\\$", id);
             }
             String uri = uriPrefix + "/" + segTemplate.getAttribute("initialization").replaceAll("\\$RepresentationID\\$", id) + uriPostfix;
             return uri;
@@ -325,6 +331,11 @@ public class DASHPlaylistManager {
             if (segTemplate.hasAttribute("startNumber")) {
                 startNum = Integer.parseInt(segTemplate.getAttribute("startNumber"));
             }
+            if (segTemplate.getAttribute("media").matches("^[\\w]+://.*")) {
+                return segTemplate.getAttribute("media").replaceAll("\\$RepresentationID\\$", id)
+                        .replaceAll("\\$Number\\$", Integer.toString(index + startNum))
+                        .replaceAll("\\$Time\\$", Long.toString(getAudioSegTime(index)));
+            }
             String uri = uriPrefix + "/" + segTemplate.getAttribute("media").replaceAll("\\$RepresentationID\\$", id)
                     .replaceAll("\\$Number\\$", Integer.toString(index + startNum))
                     .replaceAll("\\$Time\\$", Long.toString(getAudioSegTime(index))) + uriPostfix;
@@ -342,6 +353,11 @@ public class DASHPlaylistManager {
             int startNum = 0;
             if (segTemplate.hasAttribute("startNumber")) {
                 startNum = Integer.parseInt(segTemplate.getAttribute("startNumber"));
+            }
+            if (segTemplate.getAttribute("media").matches("^[\\w]+://.*")) {
+                return segTemplate.getAttribute("media").replaceAll("\\$RepresentationID\\$", id)
+                        .replaceAll("\\$Number\\$", Integer.toString(index + startNum))
+                        .replaceAll("\\$Time\\$", Long.toString(getVideoSegTime(index)));
             }
             String uri = uriPrefix + "/" + segTemplate.getAttribute("media").replaceAll("\\$RepresentationID\\$", id)
                     .replaceAll("\\$Number\\$", Integer.toString(index + startNum))
