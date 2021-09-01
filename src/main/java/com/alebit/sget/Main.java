@@ -1,5 +1,6 @@
 package com.alebit.sget;
 
+import com.alebit.sget.data.Header;
 import com.alebit.sget.playlist.DASH.DASHPlaylistManager;
 import com.alebit.sget.playlist.DASH.Representation;
 import com.alebit.sget.playlist.PlaylistManager;
@@ -7,15 +8,9 @@ import com.alebit.sget.download.StreamDownloader;
 import com.alebit.sget.playlist.Subtitle;
 import com.alebit.sget.plugin.PluginManager;
 import com.iheartradio.m3u8.data.Resolution;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Scanner;
 
@@ -78,21 +73,9 @@ public class Main {
         int video = Integer.parseInt(args[3]);
         int audio = Integer.parseInt(args[4]);
 
-        ArrayList<String[]> headers = new ArrayList<>();
-        JSONParser parser = new JSONParser();
+        Header[] headers = null;
         try {
-            JSONArray headerArray = (JSONArray) parser.parse(args[6]);
-            for (Object headerObj: headerArray) {
-                JSONObject headerJson = (JSONObject) headerObj;
-                if (headerJson.containsKey("name") && headerJson.containsKey("value")) {
-                    String[] header = new String[2];
-                    header[0] = headerJson.get("name").toString();
-                    header[1] = headerJson.get("value").toString();
-                    headers.add(header);
-                } else {
-                    throw new Exception();
-                }
-            }
+            headers = Utils.getJsonObjectMapper().readValue(args[6], Header[].class);
         } catch (Exception e) {
             System.err.println("Illegal header format");
             System.exit(-1);

@@ -1,13 +1,15 @@
 package com.alebit.sget.plugin;
 
+import com.alebit.sget.Utils;
+import com.alebit.sget.data.Header;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.commons.io.FileUtils;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
 
 import java.io.File;
 import java.net.MalformedURLException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Collection;
 
 /**
@@ -63,7 +65,7 @@ public class PluginManager {
             newArgs[3] = "0";
             newArgs[4] = "0";
             newArgs[5] = "0";
-            JSONArray headers = new JSONArray();
+            ArrayList<Header> headers = new ArrayList<>();
             try {
                 for (int i = 0; i < args.length; i++) {
                     switch (args[i].charAt(0)) {
@@ -149,9 +151,9 @@ public class PluginManager {
                                         System.err.println("Wrong argument after \"" + args[i] + "\": " + args[i + 1]);
                                         throw new IllegalArgumentException();
                                     }
-                                    JSONObject header = new JSONObject();
-                                    header.put("name", splitHeader[0].trim());
-                                    header.put("value", splitHeader[1].trim());
+                                    Header header = new Header();
+                                    header.setName(splitHeader[0].trim());
+                                    header.setValue(splitHeader[1].trim());
                                     headers.add(header);
                                     i++;
                                     break;
@@ -201,7 +203,12 @@ public class PluginManager {
                         "\t\t\tYou can set this option more than once for multiple headers");
                 System.exit(0);
             }
-            newArgs[6] = headers.toJSONString();
+            try {
+                newArgs[6] = Utils.getJsonObjectMapper().writeValueAsString(headers);
+            } catch (JsonProcessingException e) {
+                e.printStackTrace();
+                System.exit(1);
+            }
             args = newArgs;
         }
         this.args = args;

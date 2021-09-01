@@ -1,9 +1,13 @@
 package com.alebit.sget.download;
 
+import com.alebit.sget.Utils;
+import com.alebit.sget.data.Header;
+import com.alebit.sget.data.Status;
 import com.alebit.sget.decrypt.HLSDecrypter;
 import com.alebit.sget.playlist.DASH.DASHPlaylistManager;
 import com.alebit.sget.playlist.PlaylistManager;
 import com.alebit.sget.playlist.Subtitle;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.iheartradio.m3u8.Encoding;
 import com.iheartradio.m3u8.Format;
 import com.iheartradio.m3u8.PlaylistWriter;
@@ -11,9 +15,6 @@ import com.iheartradio.m3u8.data.EncryptionData;
 import com.iheartradio.m3u8.data.MediaPlaylist;
 import com.iheartradio.m3u8.data.Playlist;
 import com.iheartradio.m3u8.data.TrackData;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -29,18 +30,18 @@ import java.util.*;
 public class StreamDownloader {
     private PlaylistManager playlistManager;
     private DASHPlaylistManager dashPlaylistManager;
-    private ArrayList<String[]> headers;
+    private Header[] headers;
     private List<TrackData> tracks;
     private List<Subtitle> subtitles;
     private Path path;
     private Path partPath;
     private Path jsonPath;
     private String filename;
-    private JSONObject statusJSON;
+    private Status status;
     private int progress = -1;
     private boolean raw;
 
-    public StreamDownloader(PlaylistManager playlistManager, List<Subtitle> subtitles, ArrayList<String[]> headers, Path path, boolean raw) {
+    public StreamDownloader(PlaylistManager playlistManager, List<Subtitle> subtitles, Header[] headers, Path path, boolean raw) {
         if (path.getParent() == null) {
             path = Paths.get("." + File.separator + path.toString());
         }
@@ -83,46 +84,22 @@ public class StreamDownloader {
                 writeToPlaylist(playlistPath);
             }
 
-            statusJSON = readJSON(jsonPath);
-            if (statusJSON != null) {
+            status = readJSON(jsonPath);
+            Boolean shaMatch = false;
+            if (status != null) {
                 try {
                     MessageDigest digest = MessageDigest.getInstance("SHA-256");
-                    byte[] shaByte = digest.digest(Files.readAllBytes(playlistPath));
-                    String sha = Base64.getEncoder().encodeToString(shaByte);
-                    if (statusJSON.containsKey("SHA256")) {
-                        String oldSha = (String) statusJSON.get("SHA256");
-                        if (sha.equals(oldSha)) {
-                            progress = (int) (long) statusJSON.get("Progress");
-                        } else {
-                            System.out.println("File exists. Continue?(Y/N)");
-                            Scanner scanner = new Scanner(System.in);
-                            String chosen = scanner.nextLine();
-                            if (chosen.toLowerCase().equals("y") || chosen.toLowerCase().equals("yes")) {
-                                if (statusJSON.containsKey("Key")) {
-                                    statusJSON.replace("Key", false);
-                                }
-                            } else {
-                                System.exit(0);
-                            }
-                        }
-                    } else {
-                        System.out.println("File exists. Continue?(Y/N)");
-                        Scanner scanner = new Scanner(System.in);
-                        String chosen = scanner.nextLine();
-                        if (chosen.toLowerCase().equals("y") || chosen.toLowerCase().equals("yes")) {
-                            if (statusJSON.containsKey("Key")) {
-                                statusJSON.replace("Key", false);
-                            }
-                        } else {
-                            System.exit(0);
-                        }
-                        statusJSON.put("SHA256", sha);
+                    byte[] sha = digest.digest(Files.readAllBytes(playlistPath));
+                    if (Arrays.equals(sha, status.getSha256())) {
+                        shaMatch = true;
+                        progress = status.getProgress();
                     }
                 } catch (NoSuchAlgorithmException e) {
                     System.err.println("Cannot use SHA-256. File checker disabled.");
                 } catch (Exception e) {
                 }
-            } else if (!playlistManager.isDASH() && path.toFile().exists()) {
+            }
+            if (!shaMatch && !playlistManager.isDASH() && path.toFile().exists()) {
                 System.out.println("File exists. Continue?(Y/N)");
                 Scanner scanner = new Scanner(System.in);
                 String chosen = scanner.next();
@@ -130,22 +107,17 @@ public class StreamDownloader {
                     System.exit(0);
                 }
             }
-            String sha = "";
+            byte[] sha = new byte[0];
             try {
                 MessageDigest digest = MessageDigest.getInstance("SHA-256");
-                byte[] shaByte = digest.digest(Files.readAllBytes(playlistPath));
-                sha = Base64.getEncoder().encodeToString(shaByte);
+                sha = digest.digest(Files.readAllBytes(playlistPath));
             } catch (NoSuchAlgorithmException e) {
                 System.err.println("Cannot use SHA-256. File checker disabled.");
             }
-            if (statusJSON == null) {
-                statusJSON = new JSONObject();
-                statusJSON.put("SHA256", sha);
-            } else if (!statusJSON.containsKey("SHA256")) {
-                statusJSON.put("SHA256", sha);
-            } else {
-                statusJSON.replace("SHA256", sha);
+            if (status == null) {
+                status = new Status();
             }
+            status.setSha256(sha);
             BufferedWriter videoWriter = null;
             if (!playlistManager.isDASH()) {
                 videoWriter = new BufferedWriter(new FileWriter(path.toFile(), false));
@@ -171,12 +143,16 @@ public class StreamDownloader {
         }
     }
 
-    private JSONObject readJSON(Path jsonPath) {
+    private Status readJSON(Path jsonPath) {
         try {
-            JSONParser parser = new JSONParser();
-            return (JSONObject) parser.parse(new FileReader(jsonPath.toFile()));
+            Status status = Utils.getJsonObjectMapper().readValue(jsonPath.toFile(), Status.class);
+            if (status.getSha256() == null) {
+                System.out.println("\nstatus.json is broken. Create new file.");
+                return null;
+            }
+            return status;
         } catch (FileNotFoundException e) {
-        } catch (ParseException e) {
+        } catch (JsonProcessingException e) {
             System.out.println("\nstatus.json is broken. Create new file.");
         } catch (IOException e) {
             e.printStackTrace();
@@ -276,15 +252,9 @@ public class StreamDownloader {
     private void downloadHLS(int index) {
         DownloadManager downloadManager = new DownloadManager(headers);
         if (tracks.get(0).hasEncryptionData()) {
-            boolean status = false;
+            boolean hasKey = status.hasKey();
             boolean downs;
-            if (statusJSON != null && statusJSON.containsKey("Key")) {
-                try {
-                    status = (boolean) statusJSON.get("Key");
-                } catch (Exception e) {
-                }
-            }
-            if (!status) {
+            if (!hasKey) {
                 System.out.println("Downloading key...");
                 if (tracks.get(0).getEncryptionData().getUri().contains("://")) {
                     downs = downloadManager.download(tracks.get(0).getEncryptionData().getUri(), partPath.toString() + File.separator);
@@ -295,7 +265,7 @@ public class StreamDownloader {
                     System.err.println("Download Failed. Please try again later.");
                     System.exit(-1);
                 }
-                setKeyProgress(true);
+                setKeyProgress();
             }
         }
         for (int i = index + 1; i < tracks.size(); i++) {
@@ -355,37 +325,17 @@ public class StreamDownloader {
 
     private void setProgress(int index) {
         try {
-            if (statusJSON == null) {
-                statusJSON = new JSONObject();
-            }
-            if (statusJSON.containsKey("Progress")) {
-                statusJSON.replace("Progress", index);
-            } else {
-                statusJSON.put("Progress", index);
-            }
-            BufferedWriter jsonWriter = new BufferedWriter(new FileWriter(jsonPath.toFile()));
-            jsonWriter.write(statusJSON.toJSONString());
-            jsonWriter.flush();
-            jsonWriter.close();
+            status.setProgress(index);
+            Utils.getJsonObjectMapper().writeValue(jsonPath.toFile(), status);
         } catch (IOException e) {
             System.out.println("Cannot open status.json");
         }
     }
 
-    private void setKeyProgress(boolean status) {
+    private void setKeyProgress() {
         try {
-            if (statusJSON == null) {
-                statusJSON = new JSONObject();
-            }
-            if (statusJSON.containsKey("Key")) {
-                statusJSON.replace("Key", status);
-            } else {
-                statusJSON.put("Key", status);
-            }
-            BufferedWriter jsonWriter = new BufferedWriter(new FileWriter(jsonPath.toFile()));
-            jsonWriter.write(statusJSON.toJSONString());
-            jsonWriter.flush();
-            jsonWriter.close();
+            status.hasKey(true);
+            Utils.getJsonObjectMapper().writeValue(jsonPath.toFile(), status);
         } catch (IOException e) {
             System.out.println("Cannot open status.json");
         }

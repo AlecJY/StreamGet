@@ -1,5 +1,6 @@
 package com.alebit.sget.download;
 
+import com.alebit.sget.data.Header;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
@@ -11,9 +12,9 @@ import java.util.ArrayList;
  * Created by Alec on 2016/6/26.
  */
 public class DownloadManager {
-    private ArrayList<String[]> headers;
+    private Header[] headers;
 
-    public DownloadManager(ArrayList<String[]> headers) {
+    public DownloadManager(Header[] headers) {
         this.headers = headers;
     }
 
@@ -33,8 +34,8 @@ public class DownloadManager {
             URLConnection connection = loc.openConnection();
             connection.setConnectTimeout(60000);
             connection.setReadTimeout(60000);
-            for (String[] header: headers) {
-                connection.setRequestProperty(header[0], header[1]);
+            for (Header header: headers) {
+                connection.setRequestProperty(header.getName(), header.getValue());
             }
             FileUtils.copyInputStreamToFile(connection.getInputStream(), file);
             return true;
