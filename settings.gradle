@@ -1,3 +1,1 @@
 rootProject.name = 'StreamGet'
-include ':open-m3u8'
-project(':open-m3u8').projectDir = file('libs/open-m3u8')
