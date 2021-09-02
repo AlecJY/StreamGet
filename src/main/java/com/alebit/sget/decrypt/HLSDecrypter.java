@@ -3,6 +3,7 @@ package com.alebit.sget.decrypt;
 import com.alebit.sget.playlist.PlaylistManager;
 import com.iheartradio.m3u8.data.TrackData;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -37,16 +38,9 @@ public class HLSDecrypter {
         } else {
             for (int i = 0; i < tracks.size(); i++) {
                 TrackData trackData = tracks.get(i);
-                try {
-                    File file = new File(playlistManager.resolveURI(trackData.getUri()));
-                    FileInputStream fileInputStream = new FileInputStream(file);
-                    // TODO: support file size >2GB
-                    byte[] data = new byte[(int) file.length()];
-                    fileInputStream.read(data);
-                    FileOutputStream fileOutputStream = new FileOutputStream(path.toFile(), true);
-                    fileOutputStream.write(data);
-                    fileInputStream.close();
-                    fileOutputStream.close();
+                try (FileInputStream fileInputStream = new FileInputStream(new File(playlistManager.resolveURI(trackData.getUri())));
+                     FileOutputStream fileOutputStream = new FileOutputStream(path.toFile(), true)) {
+                    IOUtils.copyLarge(fileInputStream, fileOutputStream);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

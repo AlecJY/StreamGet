@@ -1,6 +1,9 @@
 package com.alebit.sget.decrypt;
 
+import org.apache.commons.io.IOUtils;
+
 import javax.crypto.Cipher;
+import javax.crypto.CipherInputStream;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
@@ -57,31 +60,14 @@ public class DecryptManager {
     }
 
     public void decrypt(File file, File output, boolean append) {
-        byte[] data = null;
-        try {
-            FileInputStream fileInputStream = new FileInputStream(file);
-            // TODO: support file size >2GB
-            data = new byte[(int) file.length()];
-            fileInputStream.read(data);
-            fileInputStream.close();
+        try (FileInputStream fileInputStream = new FileInputStream(file);
+             CipherInputStream cipherInputStream = new CipherInputStream(fileInputStream, cipher);
+             FileOutputStream fileOutputStream = new FileOutputStream(output, append)) {
+            IOUtils.copyLarge(cipherInputStream, fileOutputStream);
         } catch (Exception e) {
-            e.printStackTrace();
-        }
-        try {
-            data = cipher.doFinal(data);
-        } catch (Exception e) {
-            System.err.println("Decrypt failed");
+            System.err.println("File IO errors or decrypt failed");
             e.printStackTrace();
             System.exit(-1);
-        }
-        try {
-            FileOutputStream fileOutputStream = new FileOutputStream(output, append);
-            fileOutputStream.write(data);
-            fileOutputStream.flush();
-            fileOutputStream.close();
-
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 
