@@ -1,6 +1,5 @@
 package com.alebit.sget.playlist.DASH;
 
-import com.alebit.sget.Main;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -19,6 +18,8 @@ import javax.xml.transform.stream.StreamResult;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Path;
 
 /**
@@ -28,8 +29,7 @@ public class DASHPlaylistManager {
     private double mediaPresentationDuration;
     private Element audioAdaptationSet;
     private Element videoAdaptationSet;
-    private String uriPrefix;
-    private String uriPostfix;
+    private URI baseURI;
     private Node[] audioRepresentations;
     private Node[] videoRepresentations;
     private Document manifest;
@@ -112,13 +112,13 @@ public class DASHPlaylistManager {
     }
 
     public void setURI(String uri) {
-        if (uri.contains("?")) {
-            uriPostfix = uri.substring(uri.indexOf("?"));
-            uri = uri.substring(0, uri.indexOf("?"));
-        } else {
-            uriPostfix = "";
+        try {
+            baseURI = new URI(uri);
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+            System.err.println("Invalid URL: " + uri);
+            System.exit(-1);
         }
-        uriPrefix = uri.substring(0, uri.lastIndexOf("/"));
     }
 
     public Representation[] getAudioRepresentations() {
@@ -284,15 +284,11 @@ public class DASHPlaylistManager {
         }
     }
 
-    public String getAudioInitializationURI() {
+    public URI getAudioInitializationURI() {
         if (audioAdaptationSet.getElementsByTagName("SegmentTemplate").getLength() != 0) {
             Element segTemplate = (Element) audioAdaptationSet.getElementsByTagName("SegmentTemplate").item(0);
             String id = ((Element) audioAdaptationSet.getElementsByTagName("Representation").item(0)).getAttribute("id");
-            if (segTemplate.getAttribute("initialization").matches("^[\\w]+://.*")) {
-                return segTemplate.getAttribute("initialization").replaceAll("\\$RepresentationID\\$", id);
-            }
-            String uri = uriPrefix + "/" + segTemplate.getAttribute("initialization").replaceAll("\\$RepresentationID\\$", id) + uriPostfix;
-            return uri;
+            return resolveURI(segTemplate.getAttribute("initialization").replaceAll("\\$RepresentationID\\$", id));
         } else if (audioAdaptationSet.getElementsByTagName("BaseURL").getLength() != 0) {
             return null;
         } else {
@@ -302,18 +298,14 @@ public class DASHPlaylistManager {
         }
     }
 
-    public String getVideoInitializationURI() {
+    public URI getVideoInitializationURI() {
         if (videoAdaptationSet.getElementsByTagName("SegmentTemplate").getLength() != 0) {
             Element segTemplate = (Element) videoAdaptationSet.getElementsByTagName("SegmentTemplate").item(0);
             String id = ((Element) videoAdaptationSet.getElementsByTagName("Representation").item(0)).getAttribute("id");
             if (!segTemplate.hasAttribute("initialization")) {
                 return null;
             }
-            if (segTemplate.getAttribute("initialization").matches("^[\\w]+://.*")) {
-                return segTemplate.getAttribute("initialization").replaceAll("\\$RepresentationID\\$", id);
-            }
-            String uri = uriPrefix + "/" + segTemplate.getAttribute("initialization").replaceAll("\\$RepresentationID\\$", id) + uriPostfix;
-            return uri;
+            return resolveURI(segTemplate.getAttribute("initialization").replaceAll("\\$RepresentationID\\$", id));
         } else if (videoAdaptationSet.getElementsByTagName("BaseURL").getLength() != 0) {
             return null;
         } else {
@@ -323,7 +315,7 @@ public class DASHPlaylistManager {
         }
     }
 
-    public String getAudioSegURI(int index) {
+    public URI getAudioSegURI(int index) {
         if (audioAdaptationSet.getElementsByTagName("SegmentTemplate").getLength() != 0) {
             Element segTemplate = (Element) audioAdaptationSet.getElementsByTagName("SegmentTemplate").item(0);
             String id = ((Element) audioAdaptationSet.getElementsByTagName("Representation").item(0)).getAttribute("id");
@@ -331,22 +323,17 @@ public class DASHPlaylistManager {
             if (segTemplate.hasAttribute("startNumber")) {
                 startNum = Integer.parseInt(segTemplate.getAttribute("startNumber"));
             }
-            if (segTemplate.getAttribute("media").matches("^[\\w]+://.*")) {
-                return segTemplate.getAttribute("media").replaceAll("\\$RepresentationID\\$", id)
-                        .replaceAll("\\$Number\\$", Integer.toString(index + startNum))
-                        .replaceAll("\\$Time\\$", Long.toString(getAudioSegTime(index)));
-            }
-            String uri = uriPrefix + "/" + segTemplate.getAttribute("media").replaceAll("\\$RepresentationID\\$", id)
+            String uri = segTemplate.getAttribute("media").replaceAll("\\$RepresentationID\\$", id)
                     .replaceAll("\\$Number\\$", Integer.toString(index + startNum))
-                    .replaceAll("\\$Time\\$", Long.toString(getAudioSegTime(index))) + uriPostfix;
-            return uri;
+                    .replaceAll("\\$Time\\$", Long.toString(getAudioSegTime(index)));
+            return resolveURI(uri);
         } else {
             String baseURL = audioAdaptationSet.getElementsByTagName("BaseURL").item(0).getTextContent();
-            return uriPrefix + "/" + baseURL + uriPostfix;
+            return resolveURI(baseURL);
         }
     }
 
-    public String getVideoSegURI(int index) {
+    public URI getVideoSegURI(int index) {
         if (videoAdaptationSet.getElementsByTagName("SegmentTemplate").getLength() != 0) {
             Element segTemplate = (Element) videoAdaptationSet.getElementsByTagName("SegmentTemplate").item(0);
             String id = ((Element) videoAdaptationSet.getElementsByTagName("Representation").item(0)).getAttribute("id");
@@ -354,18 +341,13 @@ public class DASHPlaylistManager {
             if (segTemplate.hasAttribute("startNumber")) {
                 startNum = Integer.parseInt(segTemplate.getAttribute("startNumber"));
             }
-            if (segTemplate.getAttribute("media").matches("^[\\w]+://.*")) {
-                return segTemplate.getAttribute("media").replaceAll("\\$RepresentationID\\$", id)
-                        .replaceAll("\\$Number\\$", Integer.toString(index + startNum))
-                        .replaceAll("\\$Time\\$", Long.toString(getVideoSegTime(index)));
-            }
-            String uri = uriPrefix + "/" + segTemplate.getAttribute("media").replaceAll("\\$RepresentationID\\$", id)
+            String uri = segTemplate.getAttribute("media").replaceAll("\\$RepresentationID\\$", id)
                     .replaceAll("\\$Number\\$", Integer.toString(index + startNum))
-                    .replaceAll("\\$Time\\$", Long.toString(getVideoSegTime(index))) + uriPostfix;
-            return uri;
+                    .replaceAll("\\$Time\\$", Long.toString(getVideoSegTime(index)));
+            return resolveURI(uri);
         } else {
             String baseURL = videoAdaptationSet.getElementsByTagName("BaseURL").item(0).getTextContent();
-            return uriPrefix + "/" + baseURL + uriPostfix;
+            return resolveURI(baseURL);
         }
     }
 
@@ -394,6 +376,29 @@ public class DASHPlaylistManager {
         } catch (IOException e) {
             e.printStackTrace();
             System.exit(-1);
+        }
+    }
+
+    public URI resolveURI(String uri) {
+        try {
+            URI partURI = new URI(uri);
+            URI fullURI = baseURI.resolve(partURI);
+            String query = null;
+            String fragment = null;
+            if (baseURI.getRawQuery() != null && fullURI.getRawQuery() == null) {
+                query = baseURI.getRawQuery();
+            }
+            if (baseURI.getRawFragment() != null && fullURI.getRawFragment() == null) {
+                fragment = baseURI.getRawFragment();
+            }
+            if (query != null || fragment != null) {
+                fullURI = new URI(fullURI.getScheme(), fullURI.getRawAuthority(), fullURI.getRawPath(), query, fragment);
+            }
+            return fullURI;
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+            System.exit(-1);
+            return null;
         }
     }
 }

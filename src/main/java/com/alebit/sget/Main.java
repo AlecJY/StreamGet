@@ -103,11 +103,7 @@ public class Main {
                     if (playlistManager.getPlaylistResolution() != null && playlistManager.getPlaylistResolution().size() > 1) {
                         index = chooseResolution(playlistManager.getPlaylistResolution(), video);
                     }
-                    if (playlistManager.getPlaylistData(index).getUri().contains("://")) {
-                        url = playlistManager.getPlaylistData(index).getUri();
-                    } else {
-                        url = playlistManager.getPreURL().concat(playlistManager.getPlaylistData(index).getUri());
-                    }
+                    url = playlistManager.resolveURI(playlistManager.getPlaylistData(index).getUri()).toString();
                     if (playlistManager.getSubtitles().size() > 0) {
                         if (subtitle == 0) {
                             if (wantSubtitles()) {

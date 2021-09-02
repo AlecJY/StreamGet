@@ -17,6 +17,7 @@ import com.iheartradio.m3u8.data.Playlist;
 import com.iheartradio.m3u8.data.TrackData;
 
 import java.io.*;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -43,7 +44,7 @@ public class StreamDownloader {
 
     public StreamDownloader(PlaylistManager playlistManager, List<Subtitle> subtitles, Header[] headers, Path path, boolean raw) {
         if (path.getParent() == null) {
-            path = Paths.get("." + File.separator + path.toString());
+            path = Paths.get("." + File.separator + path);
         }
         if (playlistManager.isDASH()) {
             dashPlaylistManager = playlistManager.getDASHPlaylist();
@@ -69,18 +70,18 @@ public class StreamDownloader {
         try {
             path.getParent().toFile().mkdirs();
             if (playlistManager.isDASH()) {
-                jsonPath = Paths.get(path.getParent().toString() + File.separator + filename + File.separator + "status.json");
+                jsonPath = path.getParent().resolve(filename).resolve("status.json");
             } else {
-                jsonPath = Paths.get(path.getParent().toString() + File.separator + filename + "_part" + File.separator + "status.json");
+                jsonPath = path.getParent().resolve(filename + "_part").resolve("status.json");
             }
             jsonPath.getParent().toFile().mkdirs();
             partPath = jsonPath.getParent();
             Path playlistPath;
             if (playlistManager.isDASH()) {
-                playlistPath = Paths.get(jsonPath.getParent().toString() + File.separator + filename + ".mpd");
+                playlistPath = jsonPath.getParent().resolve(filename + ".mpd");
                 writeToDashPlaylist(playlistPath);
             } else {
-                playlistPath = Paths.get(path.getParent().toString() + File.separator + filename + "_part" + File.separator + filename + ".m3u8");
+                playlistPath = path.getParent().resolve(filename + "_part").resolve(filename + ".m3u8");
                 writeToPlaylist(playlistPath);
             }
 
@@ -237,11 +238,8 @@ public class StreamDownloader {
                 ext = uri.substring(uri.lastIndexOf("."));
             }
             System.out.println("Downloading subtitle \"" + filename + "." + subtitle.getName() + ext + "\"");
-            String subtitleURL = subtitlePlaylist.getTracks().get(0).getUri();
-            if (!subtitleURL.contains("://")) {
-                subtitleURL = subtitlePlaylist.getPreURL() + subtitleURL;
-            }
-            downStatus = downloadManager.download(subtitleURL, path.getParent().toString() + File.separator, filename + "." + subtitle.getName() + ext);
+            URI subtitleURI = subtitlePlaylist.resolveURI(subtitlePlaylist.getTracks().get(0).getUri());
+            downStatus = downloadManager.download(subtitleURI, path.getParent(), filename + "." + subtitle.getName() + ext);
             if (!downStatus) {
                 System.err.println("Download Failed. Please try again later.");
                 System.exit(-1);
@@ -253,14 +251,9 @@ public class StreamDownloader {
         DownloadManager downloadManager = new DownloadManager(headers);
         if (tracks.get(0).hasEncryptionData()) {
             boolean hasKey = status.hasKey();
-            boolean downs;
             if (!hasKey) {
                 System.out.println("Downloading key...");
-                if (tracks.get(0).getEncryptionData().getUri().contains("://")) {
-                    downs = downloadManager.download(tracks.get(0).getEncryptionData().getUri(), partPath.toString() + File.separator);
-                } else {
-                    downs = downloadManager.download(playlistManager.getPreURL() + tracks.get(0).getEncryptionData().getUri(), partPath.toString() + File.separator);
-                }
+                boolean downs = downloadManager.download(playlistManager.resolveURI(tracks.get(0).getEncryptionData().getUri()), partPath);
                 if (!downs) {
                     System.err.println("Download Failed. Please try again later.");
                     System.exit(-1);
@@ -270,12 +263,7 @@ public class StreamDownloader {
         }
         for (int i = index + 1; i < tracks.size(); i++) {
             System.out.println("Downloading video: " + Math.round(((float)i / (float)tracks.size())*100) + "% (" + (i+1) + "/" + tracks.size() + ")");
-            boolean downStatus;
-            if (tracks.get(i).getUri().contains("://")) {
-                downStatus = downloadManager.download(tracks.get(i).getUri(), partPath.toString() + File.separator);
-            } else {
-                downStatus = downloadManager.download(playlistManager.getPreURL() + tracks.get(i).getUri(), partPath.toString() + File.separator);
-            }
+            boolean downStatus = downloadManager.download(playlistManager.resolveURI(tracks.get(i).getUri()), partPath);
             if (!downStatus) {
                 System.err.println("Download Failed. Please try again later.");
                 System.exit(-1);
@@ -287,14 +275,14 @@ public class StreamDownloader {
     private void downloadDASH(int index) {
         DownloadManager downloadManager = new DownloadManager(headers);
         if (dashPlaylistManager.getAudioInitializationURI() != null) {
-            boolean downStatus = downloadManager.download(dashPlaylistManager.getAudioInitializationURI(), partPath.toString() + File.separator + dashPlaylistManager.audioID() + File.separator);
+            boolean downStatus = downloadManager.download(dashPlaylistManager.getAudioInitializationURI(), partPath.resolve(dashPlaylistManager.audioID()));
             if (!downStatus) {
                 System.err.println("Download Failed. Please try again later.");
                 System.exit(-1);
             }
         }
         if (dashPlaylistManager.getVideoInitializationURI() != null) {
-            boolean downStatus = downloadManager.download(dashPlaylistManager.getVideoInitializationURI(), partPath.toString() + File.separator + dashPlaylistManager.videoID() + File.separator);
+            boolean downStatus = downloadManager.download(dashPlaylistManager.getVideoInitializationURI(), partPath.resolve(dashPlaylistManager.videoID()));
             if (!downStatus) {
                 System.err.println("Download Failed. Please try again later.");
                 System.exit(-1);
@@ -306,14 +294,14 @@ public class StreamDownloader {
         for (int i = index + 1; i < segNum; i++) {
             System.out.println("Downloading video: " + Math.round(((float)i / (float)segNum)*100) + "% (" + (i+1) + "/" + segNum + ")");
             if (i < audioSegNum) {
-                boolean downStatus = downloadManager.download(dashPlaylistManager.getAudioSegURI(i), partPath.toString() + File.separator + dashPlaylistManager.audioID() + File.separator);
+                boolean downStatus = downloadManager.download(dashPlaylistManager.getAudioSegURI(i), partPath.resolve(dashPlaylistManager.audioID()));
                 if (!downStatus) {
                     System.err.println("Download Failed. Please try again later.");
                     System.exit(-1);
                 }
             }
             if (i < videoSegNum) {
-                boolean downStatus = downloadManager.download(dashPlaylistManager.getVideoSegURI(i), partPath.toString() + File.separator + dashPlaylistManager.videoID() + File.separator);
+                boolean downStatus = downloadManager.download(dashPlaylistManager.getVideoSegURI(i), partPath.resolve(dashPlaylistManager.videoID()));
                 if (!downStatus) {
                     System.err.println("Download Failed. Please try again later.");
                     System.exit(-1);

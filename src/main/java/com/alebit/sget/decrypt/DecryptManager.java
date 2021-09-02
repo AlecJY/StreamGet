@@ -60,6 +60,7 @@ public class DecryptManager {
         byte[] data = null;
         try {
             FileInputStream fileInputStream = new FileInputStream(file);
+            // TODO: support file size >2GB
             data = new byte[(int) file.length()];
             fileInputStream.read(data);
             fileInputStream.close();

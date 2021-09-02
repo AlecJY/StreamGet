@@ -8,7 +8,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 
 /**
@@ -21,26 +20,28 @@ public class HLSDecrypter {
     public HLSDecrypter(Path path, boolean raw) {
         this.raw = raw;
         String filename = setFilename(path);
-        Path playlistPath = Paths.get(path.getParent().toString() + File.separator + filename + "_part" + File.separator + filename + ".m3u8");
+        Path playlistPath = path.getParent().resolve(filename + "_part").resolve(filename + ".m3u8");
         PlaylistManager playlistManager = new PlaylistManager(playlistPath.toFile());
         tracks = playlistManager.getTracks();
         if (tracks.get(0).hasEncryptionData()) {
             DecryptManager decryptManager = new DecryptManager();
             if (playlistManager.getIV() != null) {
-                decryptManager.setSecret(new File(playlistManager.getPreURL() + tracks.get(0).getEncryptionData().getUri()), playlistManager.getIV());
+                decryptManager.setSecret(new File(playlistManager.resolveURI(tracks.get(0).getEncryptionData().getUri())), playlistManager.getIV());
             } else {
-                decryptManager.setSecret(new File(playlistManager.getPreURL() + tracks.get(0).getEncryptionData().getUri()));
+                decryptManager.setSecret(new File(playlistManager.resolveURI(tracks.get(0).getEncryptionData().getUri())));
             }
             for (int i = 0; i < tracks.size(); i++) {
                 TrackData trackData = tracks.get(i);
-                decryptManager.decrypt(new File(playlistManager.getPreURL() + trackData.getUri()), path.toFile(), true);
+                decryptManager.decrypt(new File(playlistManager.resolveURI(trackData.getUri())), path.toFile(), true);
             }
         } else {
             for (int i = 0; i < tracks.size(); i++) {
                 TrackData trackData = tracks.get(i);
                 try {
-                    FileInputStream fileInputStream = new FileInputStream(playlistManager.getPreURL() + trackData.getUri());
-                    byte[] data = new byte[(int) new File(playlistManager.getPreURL() + trackData.getUri()).length()];
+                    File file = new File(playlistManager.resolveURI(trackData.getUri()));
+                    FileInputStream fileInputStream = new FileInputStream(file);
+                    // TODO: support file size >2GB
+                    byte[] data = new byte[(int) file.length()];
                     fileInputStream.read(data);
                     FileOutputStream fileOutputStream = new FileOutputStream(path.toFile(), true);
                     fileOutputStream.write(data);

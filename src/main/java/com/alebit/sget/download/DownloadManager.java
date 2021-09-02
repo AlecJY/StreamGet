@@ -4,9 +4,9 @@ import com.alebit.sget.data.Header;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
-import java.net.URL;
+import java.net.URI;
 import java.net.URLConnection;
-import java.util.ArrayList;
+import java.nio.file.Path;
 
 /**
  * Created by Alec on 2016/6/26.
@@ -18,20 +18,16 @@ public class DownloadManager {
         this.headers = headers;
     }
 
-    public boolean download(String url, String filePath) {
-        String filename = url;
-        if (filename.contains("?")) {
-            filename = filename.substring(0, filename.indexOf("?"));
-        }
+    public boolean download(URI uri, Path filePath) {
+        String filename = uri.getPath();
         filename = filename.substring(filename.lastIndexOf("/") + 1);
-        return download(url, filePath, filename);
+        return download(uri, filePath, filename);
     }
 
-    public boolean download(String url, String filePath, String filename) {
+    public boolean download(URI uri, Path filePath, String filename) {
         try {
-            URL loc = new URL(url);
-            File file = new File(filePath + filename);
-            URLConnection connection = loc.openConnection();
+            File file = filePath.resolve(filename).toFile();
+            URLConnection connection = uri.toURL().openConnection();
             connection.setConnectTimeout(60000);
             connection.setReadTimeout(60000);
             for (Header header: headers) {

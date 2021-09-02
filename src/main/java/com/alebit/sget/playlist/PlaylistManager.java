@@ -17,8 +17,7 @@ import java.util.List;
 public class PlaylistManager {
     private InputStream inputStream;
     private ByteArrayOutputStream outputStream;
-    private String playlistURL;
-    private String preURL;
+    private URI playlistURI;
     private Playlist playlist;
     private MasterPlaylist masterPlaylist;
     private MediaPlaylist mediaPlaylist;
@@ -29,9 +28,9 @@ public class PlaylistManager {
     private DASHPlaylistManager dashPlaylistManager;
 
     public PlaylistManager(String url, Header[] headers) {
-        playlistURL = url;
         try {
-            URLConnection connection = new URL(playlistURL).openConnection();
+            playlistURI = new URI(url);
+            URLConnection connection = playlistURI.toURL().openConnection();
             for (Header header: headers) {
                 connection.setRequestProperty(header.getName(), header.getValue());
             }
@@ -48,8 +47,6 @@ public class PlaylistManager {
                 masterPlaylistData = masterPlaylist.getPlaylists();
             }
             mediaPlaylist = playlist.getMediaPlaylist();
-
-            setPreURL(playlistURL);
 
             setIV();
         } catch (IOException e) {
@@ -72,7 +69,7 @@ public class PlaylistManager {
     }
 
     public PlaylistManager(File file) {
-        playlistURL = file.getPath();
+        playlistURI = file.toURI();
         try {
             inputStream = new FileInputStream(file);
             PlaylistParser parser = new PlaylistParser(inputStream, Format.EXT_M3U, Encoding.UTF_8, ParsingMode.LENIENT);
@@ -84,14 +81,6 @@ public class PlaylistManager {
                 masterPlaylistData = masterPlaylist.getPlaylists();
             }
             mediaPlaylist = playlist.getMediaPlaylist();
-
-            int dotSite = playlistURL.lastIndexOf(File.separator);
-            if (dotSite > 0) {
-                preURL = playlistURL.substring(0, ++dotSite);
-            } else {
-                System.err.println("File path format error");
-                System.exit(-1);
-            }
 
             setIV();
         } catch (IOException e) {
@@ -120,10 +109,6 @@ public class PlaylistManager {
         return masterPlaylistData.get(index);
     }
 
-    public String getPreURL() {
-        return preURL;
-    }
-
     public boolean hasMasterPlaylist() {
         if (masterPlaylist == null) {
             return false;
@@ -146,27 +131,12 @@ public class PlaylistManager {
             for (MediaData mediaData: masterPlaylist.getMediaData()) {
                 if (mediaData.getGroupId().equals("subs")) {
                     String subtitleURI = mediaData.getUri();
-                    if (!subtitleURI.contains("://")) {
-                        subtitleURI = removeDotDot(getPreURL(), subtitleURI);
-                    }
                     Subtitle subtitle = new Subtitle(mediaData.getName(), mediaData.getLanguage(), subtitleURI);
                     subtitles.add(subtitle);
                 }
             }
         }
         return subtitles;
-    }
-
-    private String removeDotDot(String pUrl, String uri) {
-        try {
-            while (uri.startsWith("../")) {
-                pUrl = pUrl.substring(0, pUrl.substring(0, pUrl.length() - 1).lastIndexOf("/") + 1);
-                uri = uri.substring(uri.indexOf("/") + 1);
-            }
-        } catch (Exception e) {
-            System.err.println("Invalid URL: " + pUrl + uri);
-        }
-        return pUrl + uri;
     }
 
     public List<TrackData> getTracks() {
@@ -193,19 +163,6 @@ public class PlaylistManager {
         }
     }
 
-    private void setPreURL(String playlistURL) {
-        if (playlistURL.contains("?")) {
-            playlistURL = playlistURL.substring(0, playlistURL.indexOf("?"));
-        }
-        int dotSite = playlistURL.lastIndexOf("/");
-        if (dotSite > 0) {
-            preURL = playlistURL.substring(0, ++dotSite);
-        } else {
-            System.err.println("URL format error");
-            System.exit(-1);
-        }
-    }
-
     private void setIV() {
         if (hasMediaPlaylist()) {
             if (mediaPlaylist.getTracks().get(0).hasEncryptionData()) {
@@ -221,6 +178,10 @@ public class PlaylistManager {
 
     public boolean isDASH() {
         return playlistType;
+    }
+
+    public URI resolveURI(String uri) {
+        return playlistURI.resolve(uri);
     }
 
     public DASHPlaylistManager getDASHPlaylist() {

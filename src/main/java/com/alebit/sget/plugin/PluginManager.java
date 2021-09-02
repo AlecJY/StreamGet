@@ -31,7 +31,7 @@ public class PluginManager {
         if (jarPath == null) {
             pluginsDir = new File("." + File.separator + "plugins");
         } else {
-            pluginsDir = new File(jarPath.getParent().getParent().toString() + File.separator + "plugins");
+            pluginsDir = jarPath.getParent().getParent().resolve("plugins").toFile();
         }
         Collection<File> files = null;
         if (pluginsDir.exists()) {
