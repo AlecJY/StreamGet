@@ -4,7 +4,7 @@ import com.alebit.sget.Utils;
 import com.alebit.sget.data.Header;
 import com.alebit.sget.data.Status;
 import com.alebit.sget.decrypt.HLSDecrypter;
-import com.alebit.sget.playlist.DASH.DASHPlaylistManager;
+import com.alebit.sget.playlist.dash.DASHPlaylistManager;
 import com.alebit.sget.playlist.PlaylistManager;
 import com.alebit.sget.playlist.Subtitle;
 import com.fasterxml.jackson.core.JsonProcessingException;

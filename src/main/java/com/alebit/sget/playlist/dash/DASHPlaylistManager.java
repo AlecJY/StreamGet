@@ -1,4 +1,4 @@
-package com.alebit.sget.playlist.DASH;
+package com.alebit.sget.playlist.dash;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;

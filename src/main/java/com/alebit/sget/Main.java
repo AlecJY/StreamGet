@@ -1,8 +1,8 @@
 package com.alebit.sget;
 
 import com.alebit.sget.data.Header;
-import com.alebit.sget.playlist.DASH.DASHPlaylistManager;
-import com.alebit.sget.playlist.DASH.Representation;
+import com.alebit.sget.playlist.dash.DASHPlaylistManager;
+import com.alebit.sget.playlist.dash.Representation;
 import com.alebit.sget.playlist.PlaylistManager;
 import com.alebit.sget.download.StreamDownloader;
 import com.alebit.sget.playlist.Subtitle;

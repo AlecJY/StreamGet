@@ -1,7 +1,7 @@
 package com.alebit.sget.playlist;
 
 import com.alebit.sget.data.Header;
-import com.alebit.sget.playlist.DASH.DASHPlaylistManager;
+import com.alebit.sget.playlist.dash.DASHPlaylistManager;
 import com.iheartradio.m3u8.*;
 import com.iheartradio.m3u8.data.*;
 import org.apache.commons.io.IOUtils;
