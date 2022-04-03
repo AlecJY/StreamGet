@@ -27,6 +27,11 @@ public class HLSPlaylist implements Playlist {
     private static final MasterPlaylistParser masterPlaylistParser = new MasterPlaylistParser(ParsingMode.LENIENT);
     private static final MediaPlaylistParser mediaPlaylistParser = new MediaPlaylistParser(ParsingMode.LENIENT);
 
+    // The priority of the audio track auto-selection
+    private static final int AUDIO_GROUP = 3;
+    private static final int AUDIO_DEFAULT = 2;
+    private static final int AUDIO_AUTOSELECT = 1;
+
     private MasterPlaylist masterPlaylist;
     private MediaPlaylist mediaPlaylist;
     private MediaPlaylist audioPlaylist;
@@ -192,6 +197,47 @@ public class HLSPlaylist implements Playlist {
         } catch (UnsupportedPlaylistException e) {
             throw new RuntimeException("Can't get HLS media playlist");
         }
+    }
+
+    @Override
+    public void autoChooseAudioTrack(Quality quality) {
+        int chosenId = -1;
+        int priority = -1;
+        for (int i = 0; i < masterPlaylist.alternativeRenditions().size(); i++) {
+            AlternativeRendition alternativeRendition = masterPlaylist.alternativeRenditions().get(i);
+            if (alternativeRendition.type() == MediaType.AUDIO) {
+                int arPriority = 0;
+                if (chosenVideoTrack >= 0) {
+                    Variant variant = masterPlaylist.variants().get(chosenVideoTrack);
+                    if (variant.audio().isPresent()) {
+                        if (alternativeRendition.groupId().equals(variant.audio().get())) {
+                            arPriority = setBit(arPriority, AUDIO_GROUP);
+                        }
+                    }
+                }
+                if (alternativeRendition.defaultRendition().isPresent()) {
+                    if (alternativeRendition.defaultRendition().get()) {
+                        arPriority = setBit(arPriority, AUDIO_DEFAULT);
+                    }
+                }
+                if (alternativeRendition.autoSelect().isPresent()) {
+                    if (alternativeRendition.defaultRendition().get()) {
+                        arPriority = setBit(arPriority, AUDIO_AUTOSELECT);
+                    }
+                }
+                if (arPriority > priority) {
+                    priority = arPriority;
+                    chosenId = i;
+                }
+            }
+        }
+        if (chosenId >= 0) {
+            chooseAudioTrack(chosenId);
+        }
+    }
+
+    private int setBit(int num, int n) {
+        return num | 1 << n;
     }
 
     @Override

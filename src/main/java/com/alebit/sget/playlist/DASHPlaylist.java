@@ -46,6 +46,11 @@ public class DASHPlaylist implements Playlist {
     }
 
     @Override
+    public void autoChooseAudioTrack(Quality quality) {
+
+    }
+
+    @Override
     public boolean hasSubtitles() {
         return false;
     }

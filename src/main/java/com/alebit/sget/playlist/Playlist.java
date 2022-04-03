@@ -20,6 +20,8 @@ public interface Playlist {
 
     public void chooseAudioTrack(int index);
 
+    public void autoChooseAudioTrack(Quality quality);
+
     public boolean hasSubtitles();
 
     public void setDownloadSubtitles(boolean enable);

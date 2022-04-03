@@ -151,8 +151,14 @@ public class Main {
 
         if (audio != Quality.NONE.getValue()) {
             if (audio < Quality.NONE.getValue()) {
-                // TODO: Auto select audio tracks
-                throw new UnsupportedOperationException();
+                Quality quality;
+                if (audio == Quality.MIN.getValue()) {
+                    quality = Quality.MIN;
+                } else {
+                    quality = Quality.MAX;
+                }
+                playlist.autoChooseAudioTrack(quality);
+                return;
             } else {
                 if (playlist.getAudioTracksName().size() >= audio) {
                     playlist.chooseAudioTrack(audio - 1);
