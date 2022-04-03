@@ -1,6 +1,6 @@
 package com.alebit.sget.plugin;
 
-import com.alebit.sget.Utils;
+import com.alebit.sget.utils.Utils;
 import com.alebit.sget.data.Header;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.commons.io.FileUtils;

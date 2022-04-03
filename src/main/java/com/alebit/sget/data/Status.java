@@ -21,4 +21,10 @@ public class Status {
     @Accessors(fluent = true)
     @JsonProperty("Key")
     private boolean hasKey;
+
+    @Getter
+    @Setter
+    @Accessors(fluent = true)
+    @JsonProperty("InitSeg")
+    private boolean initSeg;
 }

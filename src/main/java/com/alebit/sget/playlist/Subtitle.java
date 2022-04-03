@@ -1,25 +1,21 @@
 package com.alebit.sget.playlist;
 
+import java.net.URI;
+
 public class Subtitle {
     private String name;
-    private String lang;
-    private String Uri;
+    private URI uri;
 
-    public Subtitle(String name, String lang, String Uri) {
+    public Subtitle(String name, URI uri) {
         this.name = name;
-        this.lang = lang;
-        this.Uri = Uri;
+        this.uri = uri;
     }
 
     public String getName() {
         return name;
     }
 
-    public String getLang() {
-        return lang;
-    }
-
-    public String getUri() {
-        return Uri;
+    public URI getUri() {
+        return uri;
     }
 }

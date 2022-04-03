@@ -29,26 +29,16 @@ public class DecryptManager {
         }
     }
 
-    public void setSecret(File file) {
+    public void setSecret(byte[] key) {
         byte[] iv = new byte[16];
-        setSecret(file, iv);
+        setSecret(key, iv);
     }
 
-    public void setSecret(File file, byte[] iv) {
-        byte[] keyData = null;
-        try {
-            FileInputStream fileInputStream = new FileInputStream(file);
-            keyData = new byte[(int) file.length()];
-            fileInputStream.read(keyData);
-            fileInputStream.close();
-        } catch (Exception e) {
-            System.err.println("Cannot get key.");
-            System.exit(-1);
-        }
-        Key key = new SecretKeySpec(keyData, "AES");
+    public void setSecret(byte[] key, byte[] iv) {
+        Key keySpec = new SecretKeySpec(key, "AES");
         IvParameterSpec ivParameterSpec = new IvParameterSpec(iv);
         try {
-            cipher.init(Cipher.DECRYPT_MODE, key, ivParameterSpec);
+            cipher.init(Cipher.DECRYPT_MODE, keySpec, ivParameterSpec);
         } catch (InvalidKeyException e) {
             System.err.println("Key is invalid.");
             e.printStackTrace();
@@ -59,13 +49,12 @@ public class DecryptManager {
         }
     }
 
-    public void decrypt(File file, File output, boolean append) {
-        try (FileInputStream fileInputStream = new FileInputStream(file);
-             CipherInputStream cipherInputStream = new CipherInputStream(fileInputStream, cipher);
-             FileOutputStream fileOutputStream = new FileOutputStream(output, append)) {
-            IOUtils.copyLarge(cipherInputStream, fileOutputStream);
+    public void decrypt(InputStream inputStream, OutputStream outputStream) {
+        try {
+            CipherInputStream cipherInputStream = new CipherInputStream(inputStream, cipher);
+            IOUtils.copyLarge(cipherInputStream, outputStream);
         } catch (Exception e) {
-            System.err.println("File IO errors or decrypt failed");
+            System.err.println("Decryption is failed");
             e.printStackTrace();
             System.exit(-1);
         }
